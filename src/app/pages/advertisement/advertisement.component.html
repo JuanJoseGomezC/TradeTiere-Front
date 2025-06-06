@@ -1,0 +1,227 @@
+<!-- Loading State -->
+<div *ngIf="loading" class="loading-container">
+  <div class="spinner"></div>
+  <p>Cargando anuncio...</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="error" class="error-container">
+  <i class="fas fa-exclamation-triangle"></i>
+  <h2>Error al cargar el anuncio</h2>
+  <p>No se pudo encontrar el anuncio solicitado.</p>
+  <button class="back-button" (click)="goBack()">
+    <i class="fas fa-arrow-left"></i> Volver al inicio
+  </button>
+</div>
+
+<!-- Advertisement Content -->
+<div *ngIf="!loading && !error && advertisement" class="advertisement-container">
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumbs" aria-label="Navegación">
+    <a routerLink="/">Inicio</a>
+    <span>/</span>
+    <a routerLink="/search">Anuncios</a>
+    <span>/</span>
+    <span>{{ advertisement.title }}</span>
+  </nav>
+
+  <div class="ad-content">
+    <!-- Main Content -->
+    <main class="ad-main">
+      <!-- Image Gallery -->
+      <section class="ad-gallery" aria-label="Galería de imágenes">        <div class="main-image-container">
+          <img
+            [src]="advertisement.images?.[currentImageIndex] || 'https://via.placeholder.com/800x600?text=Sin+Imagen'"
+            [alt]="'Imagen ' + (currentImageIndex + 1) + ' de ' + advertisement.title"
+            [title]="'Imagen ' + (currentImageIndex + 1) + ' de ' + advertisement.title"
+            class="main-image"
+            loading="lazy"
+          >
+
+          <!-- Navigation buttons -->
+          <button
+            *ngIf="advertisement.images && advertisement.images.length > 1"
+            class="gallery-nav prev"
+            (click)="prevImage()"
+            [disabled]="currentImageIndex === 0"
+            aria-label="Imagen anterior"
+          >
+            <i class="fas fa-chevron-left"></i>
+          </button>
+            <button
+            *ngIf="advertisement.images && advertisement.images.length > 1"
+            class="gallery-nav next"
+            (click)="nextImage()"
+            [disabled]="currentImageIndex === (advertisement.images.length - 1)"
+            aria-label="Siguiente imagen"
+          >
+            <i class="fas fa-chevron-right"></i>
+          </button>
+
+          <!-- Image counter -->
+          <div *ngIf="advertisement.images && advertisement.images.length > 1" class="image-counter">
+            {{ currentImageIndex + 1 }} / {{ advertisement.images.length }}
+          </div>
+        </div>
+          <!-- Thumbnails -->
+        <div *ngIf="advertisement.images && advertisement.images.length > 1" class="thumbnails">
+          <img
+            *ngFor="let image of advertisement.images; let i = index"
+            [src]="image"
+            [alt]="'Miniatura ' + (i + 1) + ' de ' + advertisement.title"
+            [title]="'Miniatura ' + (i + 1) + ' de ' + advertisement.title"
+            class="thumbnail"
+            [class.active]="i === currentImageIndex"
+            (click)="selectImage(i)"
+            loading="lazy"
+          >
+        </div>
+      </section>
+
+      <!-- Advertisement Details -->
+      <section class="ad-details">
+        <header class="ad-header">
+          <h1>{{ advertisement.title }}</h1>
+          <div class="ad-price">{{ formatPrice() }}</div>
+          <div class="ad-location">
+            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+            <span>{{ advertisement.province }}</span>
+          </div>
+        </header>
+
+        <!-- Meta Information -->
+        <div class="ad-meta">
+          <div class="meta-item">
+            <i class="fas fa-tag" aria-hidden="true"></i>
+            <span class="meta-label">Categoría</span>
+            <span class="meta-value">{{ advertisement.category || 'No especificada' }}</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-paw" aria-hidden="true"></i>
+            <span class="meta-label">Raza</span>
+            <span class="meta-value">{{ advertisement.breed || 'No especificada' }}</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+            <span class="meta-label">Edad</span>
+            <span class="meta-value">{{ getAge() }}</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-venus-mars" aria-hidden="true"></i>
+            <span class="meta-label">Género</span>
+            <span class="meta-value">{{ advertisement.gender }}</span>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="ad-description">
+          <h3>Descripción</h3>
+          <p>{{ advertisement.description }}</p>
+        </div>
+
+        <!-- Features -->
+        <div class="animal-features">
+          <h3>Características adicionales</h3>
+          <ul class="features-list">
+            <li *ngFor="let feature of features">
+              <i class="fas fa-check" aria-hidden="true"></i>
+              {{ feature }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="ad-actions">          <button type="button" class="action-button contact" (click)="contactSeller()" aria-label="Contactar con vendedor">
+            <i class="fas fa-comment"></i> Contactar
+          </button>          <button
+            type="button"
+            class="action-button favorite"
+            (click)="toggleFavorite()"
+            [attr.aria-label]="advertisement.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
+          >
+            <i [class]="advertisement.favorite ? 'fas fa-heart' : 'far fa-heart'"></i>
+            {{ advertisement.favorite ? 'Guardado' : 'Guardar' }}
+          </button>          <button type="button" class="action-button share" aria-label="Compartir anuncio" (click)="shareAd()">
+            <i class="fas fa-share-alt"></i> Compartir
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Sidebar -->
+    <aside class="ad-sidebar">
+      <!-- Seller Information -->
+      <section class="seller-info">
+        <h3>Información del vendedor</h3>        <div class="seller-profile">
+          <img
+            [src]="'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'"
+            [alt]="'Avatar de ' + advertisement.sellerName"
+            [title]="'Avatar de ' + advertisement.sellerName"
+            class="seller-avatar"
+          >
+          <div class="seller-details">
+            <div class="seller-name">{{ advertisement.sellerName }}</div>
+            <div class="seller-rating" *ngIf="advertisement.sellerRating">
+              <div class="stars">
+                <i *ngFor="let star of [1,2,3,4,5]"
+                   [class]="star <= (advertisement.sellerRating || 0) ? 'fas fa-star' : 'far fa-star'"
+                   aria-hidden="true">
+                </i>
+              </div>
+              <span>{{ advertisement.sellerRating }}/5</span>
+            </div>
+            <div class="seller-join-date" *ngIf="advertisement.sellerJoinDate">
+              Miembro desde {{ advertisement.sellerJoinDate | date:'MMM yyyy' }}
+            </div>
+          </div>
+        </div>
+
+        <div class="seller-contact">
+          <button class="contact-button primary" (click)="contactSeller()">
+            <i class="fas fa-envelope"></i>
+            Enviar mensaje
+          </button>
+        </div>
+      </section>
+
+      <!-- Safety Tips -->
+      <section class="safety-tips">
+        <h4>Consejos de seguridad</h4>
+        <ul>
+          <li>Visita al animal antes de comprarlo</li>
+          <li>Verifica la documentación sanitaria</li>
+          <li>Pregunta por la alimentación y cuidados</li>
+          <li>Solicita un certificado veterinario reciente</li>
+        </ul>
+        <a href="#" class="more-tips">Más consejos de seguridad</a>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Related Advertisements -->
+  <section class="related-ads" *ngIf="relatedAds.length > 0">
+    <h3>Anuncios relacionados</h3>
+    <div class="related-ads-grid">
+      <div *ngFor="let relatedAd of relatedAds"
+           class="related-ad-card"
+           (click)="viewRelatedAd(relatedAd.id)"
+           [attr.aria-label]="'Ver anuncio: ' + relatedAd.title">        <div class="related-ad-image">
+          <img
+            [src]="relatedAd.images?.[0] || 'https://via.placeholder.com/300x200?text=Sin+Imagen'"
+            [alt]="'Imagen de ' + relatedAd.title"
+            [title]="'Imagen de ' + relatedAd.title"
+            loading="lazy"
+          >
+        </div>
+        <div class="related-ad-info">
+          <h4>{{ relatedAd.title }}</h4>
+          <div class="related-ad-price">{{ relatedAd.price.toLocaleString('es-ES') }} €</div>
+          <div class="related-ad-location">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>{{ relatedAd.province }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

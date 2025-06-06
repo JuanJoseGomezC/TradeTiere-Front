@@ -1,0 +1,12 @@
+{
+  "name": "TradeTiere",
+  "short_name": "TradeTiere",  "icons": [
+    {
+      "src": "/assets/favicon/favicon.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    }
+  ],  "theme_color": "#463730",
+  "background_color": "#FFF2E0",
+  "display": "standalone"
+}

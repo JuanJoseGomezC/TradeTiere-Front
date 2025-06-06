@@ -1,0 +1,153 @@
+<div class="modal-overlay">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Publicar un anuncio</h2>
+      <button type="button" class="close-button" (click)="close()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-content">
+      <form [formGroup]="adForm" (ngSubmit)="onSubmit()" class="ad-form">
+        <!-- Título -->
+        <div class="form-group">
+          <label for="title">Título del anuncio *</label>
+          <input
+            type="text"
+            id="title"
+            formControlName="title"
+            placeholder="Ej. Vaca lechera Holstein de 4 años"
+            [ngClass]="{'is-invalid': adForm.get('title')?.invalid && adForm.get('title')?.touched}"
+          >
+          @if (adForm.get('title')?.invalid && adForm.get('title')?.touched) {
+            <div class="error-message">
+              @if (adForm.get('title')?.errors?.['required']) {
+                <span>El título es obligatorio</span>
+              } @else if (adForm.get('title')?.errors?.['minlength']) {
+                <span>El título debe tener al menos 5 caracteres</span>
+              } @else if (adForm.get('title')?.errors?.['maxlength']) {
+                <span>El título no puede exceder los 100 caracteres</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Categoría -->
+        <div class="form-group">
+          <label for="category">Categoría *</label>          <select
+            id="category"
+            formControlName="category"
+            [ngClass]="{'is-invalid': adForm.get('category')?.invalid && adForm.get('category')?.touched}"
+            class="dark-select"
+          >
+            <option value="" disabled selected>Selecciona una categoría</option>
+            @for (category of categories; track category.id) {
+              <option [value]="category.id">{{ category.name }}</option>
+            }
+          </select>
+          @if (adForm.get('category')?.invalid && adForm.get('category')?.touched) {
+            <div class="error-message">
+              <span>Debes seleccionar una categoría</span>
+            </div>
+          }
+        </div>
+
+        <!-- Precio -->
+        <div class="form-group">
+          <label for="price">Precio (€) *</label>
+          <input
+            type="number"
+            id="price"
+            formControlName="price"
+            placeholder="Ej. 1200"
+            [ngClass]="{'is-invalid': adForm.get('price')?.invalid && adForm.get('price')?.touched}"
+          >
+          @if (adForm.get('price')?.invalid && adForm.get('price')?.touched) {
+            <div class="error-message">
+              @if (adForm.get('price')?.errors?.['required']) {
+                <span>El precio es obligatorio</span>
+              } @else if (adForm.get('price')?.errors?.['min']) {
+                <span>El precio no puede ser negativo</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group">
+          <label for="description">Descripción *</label>
+          <textarea
+            id="description"
+            formControlName="description"
+            rows="5"
+            placeholder="Describe el animal, su edad, raza, estado de salud, etc."
+            [ngClass]="{'is-invalid': adForm.get('description')?.invalid && adForm.get('description')?.touched}"
+          ></textarea>
+          @if (adForm.get('description')?.invalid && adForm.get('description')?.touched) {
+            <div class="error-message">
+              @if (adForm.get('description')?.errors?.['required']) {
+                <span>La descripción es obligatoria</span>
+              } @else if (adForm.get('description')?.errors?.['minlength']) {
+                <span>La descripción debe tener al menos 20 caracteres</span>
+              } @else if (adForm.get('description')?.errors?.['maxlength']) {
+                <span>La descripción no puede exceder los 1000 caracteres</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Ubicación -->
+        <div class="form-group">
+          <label for="location">Ubicación *</label>
+          <input
+            type="text"
+            id="location"
+            formControlName="location"
+            placeholder="Ej. Sevilla, Andalucía"
+            [ngClass]="{'is-invalid': adForm.get('location')?.invalid && adForm.get('location')?.touched}"
+          >
+          @if (adForm.get('location')?.invalid && adForm.get('location')?.touched) {
+            <div class="error-message">
+              <span>La ubicación es obligatoria</span>
+            </div>
+          }
+        </div>
+
+        <!-- Imágenes -->
+        <div class="form-group">
+          <label for="images">Imágenes</label>
+          <div class="file-upload">
+            <input type="file" id="images" multiple (change)="onFileChange($event)">
+            <label for="images" class="file-upload-label">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span>Seleccionar imágenes</span>
+            </label>
+          </div>
+          <p class="help-text">Puedes subir hasta 5 imágenes. Formatos permitidos: JPG, PNG</p>
+        </div>
+
+        @if (errorMessage) {
+          <div class="error-container">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
+
+        <!-- Botón de envío -->
+        <div class="form-actions">
+          <button type="button" class="cancel-button" (click)="close()">Cancelar</button>          <button
+            type="submit"
+            class="submit-button"
+            [disabled]="isSubmitting"
+          >
+            @if (isSubmitting) {
+              <span class="spinner"></span>
+              <span>Publicando...</span>
+            } @else {
+              <span>Publicar anuncio</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

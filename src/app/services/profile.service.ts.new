@@ -1,0 +1,111 @@
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ApiService } from './api.service';
+import { User } from './auth.service';
+import { map } from 'rxjs/operators';
+
+export interface UserProfile extends User {
+  address?: string;
+  province?: string;
+  about?: string;
+  website?: string;
+  notifications?: {
+    email: boolean;
+    newMessages: boolean;
+    newFavorites: boolean;
+    promotions: boolean;
+  };
+}
+
+export interface UpdateUserDto {
+  birthday?: Date;
+  name?: string;
+  lastname?: string;
+  password?: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ProfileService {
+
+  constructor(private apiService: ApiService) { }
+
+  /**
+   * Get user profile by ID
+   */
+  getProfile(userId: number): Observable<UserProfile> {
+    return this.apiService.get<User>(`/user/${userId}`).pipe(
+      map(user => this.mapUserToUserProfile(user))
+    );
+  }
+
+  /**
+   * Get user profile by email
+   */
+  getProfileByEmail(email: string): Observable<UserProfile> {
+    return this.apiService.get<User>(`/user/getByMail/${email}`).pipe(
+      map(user => this.mapUserToUserProfile(user))
+    );
+  }
+
+  /**
+   * Update user profile
+   */
+  updateProfile(profileData: Partial<UserProfile>): Observable<UserProfile> {
+    // Map the data to UpdateUserDto format
+    const updateData: UpdateUserDto = {
+      name: profileData.name,
+      lastname: profileData.lastname,
+      birthday: profileData.birthday
+    };
+
+    return this.apiService.put<UpdateUserDto>('/user/updateProfile', updateData).pipe(
+      map(response => {
+        // Since the API returns only the updated fields, we need to merge with the existing profile
+        const updatedProfile = { ...profileData, ...response };
+        return updatedProfile as UserProfile;
+      })
+    );
+  }
+
+  /**
+   * Change user password
+   */
+  changePassword(currentPassword: string, newPassword: string): Observable<boolean> {
+    const updateData: UpdateUserDto = {
+      password: newPassword
+    };
+
+    return this.apiService.put<UpdateUserDto>('/user/updateProfile', updateData).pipe(
+      map(() => true)
+    );
+  }
+
+  /**
+   * Delete user account
+   */
+  deleteAccount(email: string): Observable<any> {
+    return this.apiService.delete(`/user/deleteUser/${email}`);
+  }
+
+  /**
+   * Helper method to map User to UserProfile
+   */
+  private mapUserToUserProfile(user: User): UserProfile {
+    return {
+      ...user,
+      // Default values for properties not in the API response
+      address: '',
+      province: '',
+      about: '',
+      website: '',
+      notifications: {
+        email: true,
+        newMessages: true,
+        newFavorites: true,
+        promotions: false
+      }
+    };
+  }
+}

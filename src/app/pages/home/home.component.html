@@ -1,0 +1,164 @@
+<div class="home-container">
+  <!-- Filters Section -->
+  <section class="filters-section">
+    <div class="filters-container">
+      <h2>Filtrar anuncios</h2>
+
+      <div class="filter-group">
+        <label for="searchTerm">Buscar:</label>
+        <div class="search-input-wrapper">
+          <input
+            type="text"
+            id="searchTerm"
+            [(ngModel)]="searchTerm"
+            placeholder="Buscar por título, descripción..."
+            (keyup.enter)="applyFilters()"
+          >
+          <button type="button" class="search-button" (click)="applyFilters()">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>      <div class="filter-group">
+        <label for="category">Categoría:</label>
+        <select id="category" [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
+          <option value="">Todas las categorías</option>
+          @for (category of categories; track category.id) {
+            <option [value]="category.id">{{ category.name }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Breed filter -->
+      <div class="filter-group">
+        <label for="breed">Raza:</label>
+        <select id="breed" [(ngModel)]="selectedBreed" (change)="applyFilters()" [disabled]="!selectedCategory || filteredBreeds.length === 0">
+          <option value="">Todas las razas</option>
+          @for (breed of filteredBreeds; track breed.id) {
+            <option [value]="breed.id">{{ breed.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="price-filter">
+        <label>Precio:</label>
+        <div class="price-inputs">
+          <input
+            type="number"
+            [(ngModel)]="minPrice"
+            placeholder="Mín €"
+            min="0"
+          >
+          <span>a</span>
+          <input
+            type="number"
+            [(ngModel)]="maxPrice"
+            placeholder="Máx €"
+            min="0"
+          >
+          <button type="button" class="apply-price" (click)="applyFilters()">Aplicar</button>
+        </div>
+      </div>      <button type="button" class="reset-filters" (click)="resetFilters()">
+        <i class="fas fa-undo"></i> Resetear filtros
+      </button>
+    </div>
+  </section><!-- Advertisements Section -->
+  <section class="advertisements-section">
+    <h2>Anuncios disponibles</h2>
+
+    <!-- Active Filters Summary -->
+    <div class="active-filters" *ngIf="selectedCategory || selectedBreed || minPrice || maxPrice || searchTerm">
+      <p>Filtros activos:</p>
+      <div class="filter-tags">
+        <span class="filter-tag" *ngIf="selectedCategory">
+          Categoría: {{ getCategoryName(selectedCategory) }}
+          <button (click)="removeCategory()" class="remove-filter" title="Eliminar filtro">×</button>
+        </span>
+        <span class="filter-tag" *ngIf="selectedBreed">
+          Raza: {{ getBreedName(selectedBreed) }}
+          <button (click)="removeBreed()" class="remove-filter" title="Eliminar filtro">×</button>
+        </span>
+        <span class="filter-tag" *ngIf="minPrice">
+          Precio mín: {{ minPrice }}€
+          <button (click)="removeMinPrice()" class="remove-filter" title="Eliminar filtro">×</button>
+        </span>
+        <span class="filter-tag" *ngIf="maxPrice">
+          Precio máx: {{ maxPrice }}€
+          <button (click)="removeMaxPrice()" class="remove-filter" title="Eliminar filtro">×</button>
+        </span>
+        <span class="filter-tag" *ngIf="searchTerm">
+          Buscar: "{{ searchTerm }}"
+          <button (click)="removeSearchTerm()" class="remove-filter" title="Eliminar filtro">×</button>
+        </span>
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Cargando anuncios...</p>
+      </div>
+    } @else if (error) {
+      <div class="error-message">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>{{ error }}</p>
+      </div>
+    } @else if (filteredAds.length === 0) {
+      <div class="no-results">
+        <i class="fas fa-search"></i>
+        <h3>No se encontraron anuncios</h3>
+        <p>Intenta con otros criterios de búsqueda</p>
+        <button type="button" class="reset-filters" (click)="resetFilters()">Ver todos los anuncios</button>
+      </div>
+    } @else {
+      <div class="ads-grid">
+        @for (ad of filteredAds; track ad.id) {
+          <div class="ad-card">
+            <div class="ad-image">
+              @if (ad.images && ad.images.length > 0) {
+                <img [src]="ad.images[0]" [alt]="'Imagen de ' + ad.title" class="ad-thumbnail">
+              } @else {
+                <div class="no-image">
+                  <i class="fas fa-image"></i>
+                </div>
+              }
+              <!-- Badge for categories -->
+              <span class="category-badge">{{ ad.category === 'vacuno' ? 'Vacuno' :
+                                          ad.category === 'ovino' ? 'Ovino' :
+                                          ad.category === 'caprino' ? 'Caprino' :
+                                          ad.category === 'porcino' ? 'Porcino' :
+                                          ad.category === 'avicola' ? 'Avícola' :
+                                          ad.category === 'equino' ? 'Equino' : 'Otros' }}</span>
+            </div>
+            <div class="ad-details">
+              <h3 class="ad-title">
+                <a [routerLink]="['/advertisement', ad.id]">{{ ad.title }}</a>
+              </h3>
+              <p class="ad-price">{{ ad.price | currency:'EUR':'symbol':'1.0-0' }}</p>
+              <p class="ad-location">
+                <i class="fas fa-map-marker-alt"></i> {{ ad.province || 'Localización no especificada' }}
+              </p>
+              <p class="ad-date">
+                <i class="fas fa-calendar-alt"></i> {{ ad.create_at | date:'dd/MM/yyyy' }}
+              </p>
+            </div>
+            <div class="ad-actions">              <button
+                type="button"
+                class="action-button favorite"
+                [class.is-favorite]="ad.favorite"
+                [title]="ad.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
+                [attr.aria-label]="ad.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
+                (click)="toggleFavorite(ad)"
+              >
+                <i [class]="ad.favorite ? 'fas fa-heart' : 'far fa-heart'"></i>
+              </button>
+              <a [routerLink]="['/advertisement', ad.id]" class="view-button">
+                Ver anuncio <i class="fas fa-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>
+

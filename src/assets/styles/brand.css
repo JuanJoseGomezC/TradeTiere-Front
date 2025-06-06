@@ -1,0 +1,158 @@
+/* Estilos de identidad de marca TradeTiere */
+
+/*
+ * Implementación de la tipografía Casablanca URW Light
+ * Nota: Se utiliza Montserrat como alternativa cuando Casablanca URW Light no esté disponible
+ * La tipografía Montserrat Alternates se usa para la modificación de la "T" en el logotipo
+ */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Montserrat+Alternates:wght@500;700&display=swap');
+
+/*
+ * Para cuando la fuente Casablanca URW Light esté disponible,
+ * descomentar el siguiente bloque y ajustar la ruta al archivo de la fuente:
+
+@font-face {
+  font-family: 'Casablanca URW Light';
+  src: url('../fonts/CasablancaURW-Light.woff2') format('woff2'),
+       url('../fonts/CasablancaURW-Light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+/* Variaciones de logotipo */
+.logo {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  position: relative;
+}
+
+/* Estilizar la T inicial como se especifica en el diseño usando Montserrat Alternates */
+.logo::first-letter {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-weight: 700;
+}
+
+/* Logotipo en versión oscura sobre fondo claro */
+.logo.dark {
+  color: #463730; /* Marrón oscuro */
+}
+
+/* Logotipo en versión clara sobre fondo oscuro */
+.logo.light {
+  color: #FFF2E0; /* Crema */
+}
+
+/* Paleta de colores de la marca */
+:root {
+  --tradetiere-dark-brown: #463730;
+  --tradetiere-medium-brown: #A77C5A;
+  --tradetiere-terracotta: #D48163;
+  --tradetiere-cream: #FFF2E0;
+  /* Variables para tema claro (default) */
+  --background-color: var(--tradetiere-cream);
+  --text-color: var(--tradetiere-dark-brown);
+  --primary-button-bg: var(--tradetiere-dark-brown);
+  --primary-button-text: var(--tradetiere-cream);
+  --secondary-button-bg: var(--tradetiere-medium-brown);
+  --secondary-button-text: var(--tradetiere-cream);
+  --accent-color: var(--tradetiere-terracotta);
+  --border-color: #E0E0E0;
+  --card-bg: #FFFFFF;
+  --input-bg: #FFFFFF;
+  --header-bg: #FFFFFF;
+  --footer-bg: var(--tradetiere-dark-brown);
+  --footer-text: var(--tradetiere-cream);
+}
+
+/* Variables para tema oscuro */
+@media (prefers-color-scheme: dark) {  :root {
+    --background-color: #2A2520; /* Versión más oscura del marrón */
+    --text-color: var(--tradetiere-cream);
+    --primary-button-bg: var(--tradetiere-medium-brown);
+    --primary-button-text: #FFFFFF;
+    --secondary-button-bg: var(--tradetiere-terracotta);
+    --secondary-button-text: #FFFFFF;
+    --accent-color: var(--tradetiere-terracotta);
+    --border-color: #4D4540;
+    --card-bg: #3A3530;
+    --input-bg: #3A3530;
+    --header-bg: #2A2520;
+    --footer-bg: #211E1B;
+    --footer-text: var(--tradetiere-cream);
+  }
+
+  /* Ajustes específicos para modo oscuro */
+  .logo {
+    color: var(--tradetiere-cream) !important;
+  }
+}
+
+/* Clases de utilidad para colores */
+.bg-dark-brown { background-color: var(--tradetiere-dark-brown); }
+.bg-medium-brown { background-color: var(--tradetiere-medium-brown); }
+.bg-terracotta { background-color: var(--tradetiere-terracotta); }
+.bg-cream { background-color: var(--tradetiere-cream); }
+
+.text-dark-brown { color: var(--tradetiere-dark-brown); }
+.text-medium-brown { color: var(--tradetiere-medium-brown); }
+.text-terracotta { color: var(--tradetiere-terracotta); }
+.text-cream { color: var(--tradetiere-cream); }
+
+/* Clases para temas adaptables */
+.bg-theme { background-color: var(--background-color); }
+.text-theme { color: var(--text-color); }
+.border-theme { border-color: var(--border-color); }
+.card-bg { background-color: var(--card-bg); }
+
+/* Soporte para cambio manual de tema */
+html.dark-theme {
+  --background-color: #2A2520; /* Versión más oscura del marrón */
+  --text-color: var(--tradetiere-cream);
+  --primary-button-bg: var(--tradetiere-medium-brown);
+  --primary-button-text: #FFFFFF;
+  --secondary-button-bg: var(--tradetiere-terracotta);
+  --secondary-button-text: #FFFFFF;
+  --accent-color: var(--tradetiere-terracotta);
+  --border-color: #4D4540;
+  --card-bg: #3A3530;
+  --header-bg: #2A2520;
+  --footer-bg: #211E1B;
+  --footer-text: var(--tradetiere-cream);
+  --input-bg: #3C332D;
+}
+
+/* Transición suave entre temas */
+html {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* Botón de toggle de tema */
+.theme-toggle-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  background-color: rgba(167, 124, 90, 0.1);
+  transform: scale(1.05);
+}
+
+.theme-toggle-btn i {
+  font-size: 1.2rem;
+}

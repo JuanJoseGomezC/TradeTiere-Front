@@ -1,0 +1,450 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { AdvertisementService, Advertisement } from '../../services/advertisement.service';
+import { ActivatedRoute, Router } from '@angular/router';
+
+@Component({
+  selector: 'app-home',
+  standalone: true,
+  imports: [CommonModule, RouterLink, FormsModule],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.css'
+})
+export class HomeComponent implements OnInit {
+  advertisements: Advertisement[] = [];
+  filteredAds: Advertisement[] = [];
+  loading = true;
+  error: string | null = null;
+  // Filter variables
+  selectedCategory: string = '';
+  selectedBreed: string = '';
+  minPrice: number | null = null;
+  maxPrice: number | null = null;
+  searchTerm: string = '';
+
+
+  // Available categories (species)
+  categories = [
+    { id: 'vacuno', name: 'Vacuno' },
+    { id: 'ovino', name: 'Ovino' },
+    { id: 'caprino', name: 'Caprino' },
+    { id: 'porcino', name: 'Porcino' },
+    { id: 'avicola', name: 'Avícola' },
+    { id: 'equino', name: 'Equino' },
+    { id: 'otros', name: 'Otros animales' }
+  ];
+
+  // Available breeds (razas) based on species
+  breeds: { id: string, name: string, category: string }[] = [
+    // Vacuno
+    { id: 'holstein', name: 'Holstein', category: 'vacuno' },
+    { id: 'angus', name: 'Aberdeen Angus', category: 'vacuno' },
+    { id: 'hereford', name: 'Hereford', category: 'vacuno' },
+    { id: 'charolais', name: 'Charolais', category: 'vacuno' },
+    { id: 'limousin', name: 'Limousin', category: 'vacuno' },
+
+    // Ovino
+    { id: 'merino', name: 'Merino', category: 'ovino' },
+    { id: 'suffolk', name: 'Suffolk', category: 'ovino' },
+    { id: 'dorper', name: 'Dorper', category: 'ovino' },
+    { id: 'lacaune', name: 'Lacaune', category: 'ovino' },
+
+    // Caprino
+    { id: 'murcianogranadina', name: 'Murciano-Granadina', category: 'caprino' },
+    { id: 'malagueña', name: 'Malagueña', category: 'caprino' },
+    { id: 'saanen', name: 'Saanen', category: 'caprino' },
+
+    // Porcino
+    { id: 'iberico', name: 'Ibérico', category: 'porcino' },
+    { id: 'duroc', name: 'Duroc', category: 'porcino' },
+    { id: 'landrace', name: 'Landrace', category: 'porcino' },
+    { id: 'pietrain', name: 'Pietrain', category: 'porcino' },
+
+    // Avícola
+    { id: 'leghorn', name: 'Leghorn', category: 'avicola' },
+    { id: 'rhodeisland', name: 'Rhode Island', category: 'avicola' },
+    { id: 'orpington', name: 'Orpington', category: 'avicola' },
+    { id: 'brahma', name: 'Brahma', category: 'avicola' },
+
+    // Equino
+    { id: 'purarazaespanola', name: 'Pura Raza Española', category: 'equino' },
+    { id: 'arabe', name: 'Árabe', category: 'equino' },
+    { id: 'andaluz', name: 'Andaluz', category: 'equino' },
+    { id: 'cuartodmilla', name: 'Cuarto de Milla', category: 'equino' }
+  ];
+
+  // Filtered breeds based on selected category
+  filteredBreeds: { id: string, name: string, category: string }[] = [];  constructor(
+    private advertisementService: AdvertisementService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}ngOnInit(): void {
+    // Check if there are filters in the query params
+    this.route.queryParams.subscribe(params => {
+      if (params['category']) {
+        this.selectedCategory = params['category'];
+        // Update filtered breeds based on category
+        this.updateFilteredBreeds();
+
+        // If there's also a breed parameter and we have filtered breeds
+        if (params['breed'] && this.filteredBreeds.length > 0) {
+          // Verify that the selected breed belongs to the selected category
+          const breedExists = this.filteredBreeds.some(breed => breed.id === params['breed']);
+          if (breedExists) {
+            this.selectedBreed = params['breed'];
+          }
+        }
+      }
+      this.loadAdvertisements();
+    });
+  }
+
+  // Update filtered breeds based on selected category
+  updateFilteredBreeds(): void {
+    if (this.selectedCategory) {
+      this.filteredBreeds = this.breeds.filter(breed => breed.category === this.selectedCategory);
+    } else {
+      this.filteredBreeds = [];
+    }
+  }
+
+  // Handle category change
+  onCategoryChange(): void {
+    // Reset breed selection when category changes
+    this.selectedBreed = '';
+    // Update filtered breeds
+    this.updateFilteredBreeds();
+    // Apply filters
+    this.applyFilters();
+  }
+
+  loadAdvertisements(): void {
+    this.loading = true;
+    this.error = null;
+
+    // Create mock data during development
+    this.createMockAdvertisements();
+
+    // In production, uncomment this code to use the real service
+    // this.advertisementService.getAdvertisements().subscribe({
+    //   next: (ads) => {
+    //     this.advertisements = ads;
+    //     this.applyFilters();
+    //     this.loading = false;
+    //   },
+    //   error: (err) => {
+    //     console.error('Error loading advertisements', err);
+    //     this.error = 'No se pudieron cargar los anuncios. Por favor, inténtelo de nuevo más tarde.';
+    //     this.loading = false;
+    //   }
+    // });
+  }  applyFilters(): void {
+    let filtered = [...this.advertisements];
+
+    // Filter by category (species)
+    if (this.selectedCategory) {
+      filtered = filtered.filter(ad => ad.category === this.selectedCategory);
+    }
+
+    // Filter by breed
+    if (this.selectedBreed) {
+      const selectedBreedName = this.breeds.find(b => b.id === this.selectedBreed)?.name;
+      if (selectedBreedName) {
+        filtered = filtered.filter(ad => ad.breed && ad.breed.toLowerCase() === selectedBreedName.toLowerCase());
+      }
+    }
+
+    // Filter by price range
+    if (this.minPrice !== null) {
+      filtered = filtered.filter(ad => ad.price >= this.minPrice!);
+    }
+
+    if (this.maxPrice !== null) {
+      filtered = filtered.filter(ad => ad.price <= this.maxPrice!);
+    }    // Filter by search term
+    if (this.searchTerm.trim() !== '') {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(ad =>
+        ad.title.toLowerCase().includes(term) ||
+        ad.description.toLowerCase().includes(term) ||
+        (ad.breed && ad.breed.toLowerCase().includes(term)) ||
+        // Find category name that matches search term
+        this.categories.find(cat => cat.id === ad.category)?.name.toLowerCase().includes(term)
+      );
+    }
+
+    this.filteredAds = filtered;
+
+    // Update URL with category and breed filters
+    const queryParams: any = {};
+    if (this.selectedCategory) {
+      queryParams.category = this.selectedCategory;
+    }
+    if (this.selectedBreed) {
+      queryParams.breed = this.selectedBreed;
+    }
+
+    // Only update params if we have filters
+    if (Object.keys(queryParams).length > 0) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: queryParams,
+        queryParamsHandling: 'merge'
+      });
+    }
+  }  resetFilters(): void {
+    this.selectedCategory = '';
+    this.selectedBreed = '';
+    this.minPrice = null;
+    this.maxPrice = null;
+    this.searchTerm = '';
+    this.filteredBreeds = []; // Clear filtered breeds
+    this.applyFilters();
+
+    // Remove query params
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {}
+    });
+  }
+  toggleFavorite(ad: Advertisement): void {
+    ad.favorite = !ad.favorite;
+    // In a real application, you would call the service to update the favorite status
+    // this.advertisementService.toggleFavorite(ad.id, ad.favorite).subscribe();
+
+    // For now, just update the UI
+    console.log(`Toggle favorite for ad ${ad.id}: ${ad.favorite}`);
+  }
+
+  // Mock data creation for development purposes
+  private createMockAdvertisements(): void {
+    const mockAds: Advertisement[] = [
+      {
+        id: 1,
+        title: 'Vaca lechera Holstein',
+        description: 'Vaca lechera Holstein de 4 años en excelente estado de salud. Produce 30 litros diarios.',
+        price: 1200,
+        location: 1,
+        specie: 1,
+        race: 1,
+        language: 1,
+        birthdate: new Date('2020-05-12'),
+        gender: 'Hembra',
+        state: true,
+        create_at: new Date('2024-03-15'),
+        category: 'vacuno',
+        breed: 'Holstein',
+        age: 4,
+        province: 'Sevilla',
+        images: ['assets/images/mock/vaca1.jpg', 'assets/images/mock/vaca2.jpg'],
+        sellerId: 1,
+        sellerName: 'Granja El Amanecer',
+        sellerRating: 4.8,
+        favorite: false
+      },
+      {
+        id: 2,
+        title: 'Toro Aberdeen Angus de pura raza',
+        description: 'Toro Aberdeen Angus de 3 años, excelente genética para reproducción y carne de alta calidad.',
+        price: 2500,
+        location: 4,
+        specie: 1,
+        race: 2,
+        language: 1,
+        birthdate: new Date('2021-06-10'),
+        gender: 'Macho',
+        state: true,
+        create_at: new Date('2024-04-05'),
+        category: 'vacuno',
+        breed: 'Aberdeen Angus',
+        age: 3,
+        province: 'Cádiz',
+        images: ['assets/images/mock/toro1.jpg'],
+        sellerId: 4,
+        sellerName: 'Finca Los Robles',
+        sellerRating: 4.9,
+        favorite: false
+      },
+      {
+        id: 3,
+        title: 'Cordero merino de alta calidad',
+        description: 'Cordero merino de 8 meses, ideal para reproducción. Lana de excelente calidad.',
+        price: 350,
+        location: 2,
+        specie: 2,
+        race: 2,
+        language: 1,
+        birthdate: new Date('2023-10-05'),
+        gender: 'Macho',
+        state: true,
+        create_at: new Date('2024-05-01'),
+        category: 'ovino',
+        breed: 'Merino',
+        age: 1,
+        province: 'Granada',
+        images: ['assets/images/mock/oveja1.jpg'],
+        sellerId: 2,
+        sellerName: 'Ganadería Hermanos López',
+        sellerRating: 4.5,
+        favorite: false
+      },
+      {
+        id: 4,
+        title: 'Oveja Suffolk de calidad premium',
+        description: 'Oveja Suffolk de 2 años, excelente para carne y producción lechera.',
+        price: 400,
+        location: 5,
+        specie: 2,
+        race: 3,
+        language: 1,
+        birthdate: new Date('2022-03-15'),
+        gender: 'Hembra',
+        state: true,
+        create_at: new Date('2024-04-25'),
+        category: 'ovino',
+        breed: 'Suffolk',
+        age: 2,
+        province: 'Jaén',
+        images: ['assets/images/mock/oveja2.jpg'],
+        sellerId: 5,
+        sellerName: 'Ovinos del Sur',
+        sellerRating: 4.3,
+        favorite: false
+      },
+      {
+        id: 5,
+        title: 'Cabra Murciano-Granadina lechera',
+        description: 'Cabra Murciano-Granadina de 3 años con alta producción láctea, ideal para queserías artesanales.',
+        price: 280,
+        location: 6,
+        specie: 3,
+        race: 1,
+        language: 1,
+        birthdate: new Date('2021-02-20'),
+        gender: 'Hembra',
+        state: true,
+        create_at: new Date('2024-04-10'),
+        category: 'caprino',
+        breed: 'Murciano-Granadina',
+        age: 3,
+        province: 'Murcia',
+        images: ['assets/images/mock/cabra1.jpg'],
+        sellerId: 6,
+        sellerName: 'Lácteos Naturales',
+        sellerRating: 4.7,
+        favorite: false
+      },
+      {
+        id: 6,
+        title: 'Cerdo Ibérico de bellota',
+        description: 'Cerdo Ibérico puro de bellota de 14 meses, criado en dehesa natural.',
+        price: 650,
+        location: 7,
+        specie: 4,
+        race: 1,
+        language: 1,
+        birthdate: new Date('2023-02-10'),
+        gender: 'Macho',
+        state: true,
+        create_at: new Date('2024-04-15'),
+        category: 'porcino',
+        breed: 'Ibérico',
+        age: 1,
+        province: 'Salamanca',
+        images: ['assets/images/mock/cerdo1.jpg'],
+        sellerId: 7,
+        sellerName: 'Dehesas Extremeñas',
+        sellerRating: 4.9,
+        favorite: false
+      },
+      {
+        id: 7,
+        title: 'Gallinas ponedoras Leghorn',
+        description: 'Lote de 5 gallinas ponedoras de raza Leghorn. Producen huevos grandes a diario.',
+        price: 75,
+        location: 3,
+        specie: 5,
+        race: 5,
+        language: 1,
+        birthdate: new Date('2023-01-15'),
+        gender: 'Hembra',
+        state: true,
+        create_at: new Date('2024-04-20'),
+        category: 'avicola',
+        breed: 'Leghorn',
+        age: 1,
+        province: 'Córdoba',
+        images: ['assets/images/mock/gallina1.jpg', 'assets/images/mock/gallina2.jpg'],
+        sellerId: 3,
+        sellerName: 'Avícola San Pedro',
+        sellerRating: 4.2,
+        favorite: false
+      },
+      {
+        id: 8,
+        title: 'Caballo Pura Raza Española',
+        description: 'Caballo PRE de 5 años, domado y con excelente morfología. Ideal para doma clásica.',
+        price: 8500,
+        location: 8,
+        specie: 6,
+        race: 1,
+        language: 1,
+        birthdate: new Date('2019-07-20'),
+        gender: 'Macho',
+        state: true,
+        create_at: new Date('2024-03-30'),
+        category: 'equino',
+        breed: 'Pura Raza Española',
+        age: 5,
+        province: 'Jerez',
+        images: ['assets/images/mock/caballo1.jpg'],
+        sellerId: 8,
+        sellerName: 'Yeguada Real',
+        sellerRating: 5.0,
+        favorite: false
+      }
+    ];
+
+    this.advertisements = mockAds;
+    this.filteredAds = [...mockAds];
+    this.loading = false;
+  }
+
+  // Helper methods for the template
+  getCategoryName(categoryId: string): string {
+    return this.categories.find(c => c.id === categoryId)?.name || '';
+  }
+
+  getBreedName(breedId: string): string {
+    return this.breeds.find(b => b.id === breedId)?.name || '';
+  }
+
+  removeCategory(): void {
+    this.selectedCategory = '';
+    this.selectedBreed = '';
+    this.filteredBreeds = [];
+    this.applyFilters();
+  }
+
+  removeBreed(): void {
+    this.selectedBreed = '';
+    this.applyFilters();
+  }
+
+  removeMinPrice(): void {
+    this.minPrice = null;
+    this.applyFilters();
+  }
+
+  removeMaxPrice(): void {
+    this.maxPrice = null;
+    this.applyFilters();
+  }
+
+  removeSearchTerm(): void {
+    this.searchTerm = '';
+    this.applyFilters();
+  }
+}

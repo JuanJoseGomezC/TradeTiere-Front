@@ -1,0 +1,163 @@
+import { Injectable } from '@angular/core';
+import { Observable, of, map } from 'rxjs';
+import { ApiService } from './api.service';
+
+export interface Advertisement {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  location: number;
+  specie: number;
+  race: number;
+  language: number;
+  birthdate: Date;
+  gender: string;
+  state: boolean;
+  create_at: Date;
+  // Additional frontend properties
+  category?: 'vacuno' | 'ovino' | 'caprino' | 'porcino' | 'avicola' | 'equino' | 'otros';
+  breed?: string;
+  age?: number;
+  province?: string;
+  images?: string[];
+  sellerId?: number;
+  sellerName?: string;
+  sellerRating?: number;
+  sellerJoinDate?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+  views?: number;
+  favorite?: boolean;
+}
+
+export interface RelatedAd {
+  id: number;
+  title: string;
+  price: number;
+  images?: string[];
+  province?: string;
+}
+
+export interface UpdateAdvertisementDto {
+  title?: string;
+  description?: string;
+  location?: number;
+  specie?: number;
+  race?: number;
+  birthdate?: Date;
+  language?: number;
+  gender?: string;
+  price?: number;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AdvertisementService {
+
+  constructor(private apiService: ApiService) { }
+
+  /**
+   * Get all advertisements
+   */
+  getAdvertisements(category?: string): Observable<Advertisement[]> {
+    return this.apiService.get<Advertisement[]>('/adverstisement')
+      .pipe(
+        map(ads => {
+          if (category) {
+            // Filter by category if provided
+            return ads.filter(ad => this.mapSpecieToCategory(ad.specie) === category);
+          }
+          return ads;
+        })
+      );
+  }
+
+  /**
+   * Get advertisement by ID
+   */
+  getAdvertisementById(id: number): Observable<Advertisement | undefined> {
+    return this.apiService.get<Advertisement>(`/adverstisement/${id}`);
+  }
+
+  /**
+   * Create a new advertisement
+   */
+  createAdvertisement(adData: Partial<Advertisement>): Observable<Advertisement> {
+    // Map to the expected format
+    const advertisementDto = this.mapToApiFormat(adData);
+    return this.apiService.post<Advertisement>('/adverstisement', advertisementDto);
+  }
+
+  /**
+   * Update an existing advertisement
+   */
+  updateAdvertisement(id: number, adData: Partial<Advertisement>): Observable<Advertisement> {
+    // Map to the expected format
+    const updateDto: UpdateAdvertisementDto = this.mapToApiFormat(adData);
+    return this.apiService.put<Advertisement>(`/adverstisement/${id}`, updateDto);
+  }
+
+  /**
+   * Delete an advertisement
+   */
+  deleteAdvertisement(id: number): Observable<any> {
+    return this.apiService.delete(`/adverstisement/${id}`);
+  }
+
+  /**
+   * Get user's advertisements
+   */
+  getUserAdvertisements(email: string): Observable<Advertisement[]> {
+    return this.apiService.get<Advertisement[]>(`/adverstisement/${email}`);
+  }
+
+  /**
+   * Update advertisement status (sold/active)
+   */
+  updateAdStatus(adId: number, status: boolean): Observable<Advertisement | null> {
+    const updateData: UpdateAdvertisementDto = {
+      // In the API, status is represented by the 'state' field
+      // true = active, false = sold
+    };
+
+    return this.apiService.put<Advertisement>(`/adverstisement/${adId}`, { state: status });
+  }
+
+  /**
+   * Helper method to map frontend model to API format
+   */
+  private mapToApiFormat(adData: Partial<Advertisement>): any {
+    return {
+      title: adData.title,
+      description: adData.description,
+      location: adData.location,
+      specie: adData.specie,
+      race: adData.race,
+      birthdate: adData.birthdate,
+      language: adData.language,
+      gender: adData.gender,
+      price: adData.price,
+      state: adData.state !== undefined ? adData.state : true // Default active
+    };
+  }
+
+  /**
+   * Helper method to map specie ID to category
+   */
+  private mapSpecieToCategory(specieId: number): string | undefined {
+    // This mapping will need to be updated based on your actual data
+    const specieMap: Record<number, string> = {
+      1: 'vacuno',
+      2: 'ovino',
+      3: 'caprino',
+      4: 'porcino',
+      5: 'avicola',
+      6: 'equino',
+      7: 'otros'
+    };
+
+    return specieMap[specieId];
+  }
+}

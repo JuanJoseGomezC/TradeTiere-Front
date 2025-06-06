@@ -1,1 +1,205 @@
 /* You can add global styles to this file, and also import other style files */
+@import url('./assets/styles/brand.css');
+
+/* Global Styles for TradeTiere */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  font-family: 'Casablanca URW Light', 'Montserrat', 'Roboto', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Estado del body cuando hay un modal abierto */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Global link styles */
+a {
+  color: var(--secondary-button-bg); /* Color de enlace según el tema */
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--accent-color); /* Color de enlace al hacer hover según el tema */
+  text-decoration: underline;
+}
+
+/* Global button styles */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Utility classes */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mb-2 {
+  margin-bottom: 1rem;
+}
+
+.mb-3 {
+  margin-bottom: 1.5rem;
+}
+
+.mt-2 {
+  margin-top: 1rem;
+}
+
+.mt-3 {
+  margin-top: 1.5rem;
+}
+
+/* Loading animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Botones con los colores de la marca */
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: var(--tradetiere-dark-brown); /* #463730 */
+  color: var(--tradetiere-cream); /* #FFF2E0 */
+}
+
+.btn-primary:hover {
+  background-color: #574741;
+  text-decoration: none;
+}
+
+.btn-secondary {
+  background-color: var(--tradetiere-medium-brown); /* #A77C5A */
+  color: var(--tradetiere-cream); /* #FFF2E0 */
+}
+
+.btn-secondary:hover {
+  background-color: #b88d6b;
+  text-decoration: none;
+}
+
+.btn-accent {
+  background-color: var(--tradetiere-terracotta); /* #D48163 */
+  color: white;
+}
+
+.btn-accent:hover {
+  background-color: #e59277;
+  text-decoration: none;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 2px solid var(--tradetiere-dark-brown);
+  color: var(--tradetiere-dark-brown);
+}
+
+.btn-outline:hover {
+  background-color: var(--tradetiere-dark-brown);
+  color: var(--tradetiere-cream);
+  text-decoration: none;
+}
+
+/* Tarjetas con los colores de la marca */
+.card {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(70, 55, 48, 0.1);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.card:hover {
+  box-shadow: 0 5px 15px rgba(70, 55, 48, 0.15);
+}
+
+.card-bordered-primary {
+  border-left: 4px solid var(--tradetiere-dark-brown);
+}
+
+.card-bordered-secondary {
+  border-left: 4px solid var(--tradetiere-medium-brown);
+}
+
+.card-bordered-accent {
+  border-left: 4px solid var(--tradetiere-terracotta);
+}
+
+/* Badges con los colores de la marca */
+.badge {
+  display: inline-block;
+  padding: 0.25em 0.5em;
+  font-size: 0.875em;
+  font-weight: 500;
+  border-radius: 50px;
+}
+
+.badge-primary {
+  background-color: var(--tradetiere-dark-brown);
+  color: var(--tradetiere-cream);
+}
+
+.badge-secondary {
+  background-color: var(--tradetiere-medium-brown);
+  color: var(--tradetiere-cream);
+}
+
+.badge-accent {
+  background-color: var(--tradetiere-terracotta);
+  color: white;
+}
+
+/* Estilos globales para selects para garantizar legibilidad */
+.dark-select option {
+  font-weight: 500 !important;
+  background-color: #3A3530 !important;
+  color: white !important;
+}

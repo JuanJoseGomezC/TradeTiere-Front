@@ -1,0 +1,316 @@
+<div class="profile-container">
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando perfil...</p>
+    </div>
+  } @else if (!profile) {
+    <div class="error-container">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Error al cargar el perfil</h3>
+      <p>Por favor, inicia sesión para acceder a esta página</p>
+      <a routerLink="/login" class="login-button">Iniciar sesión</a>
+    </div>
+  } @else {
+    <div class="profile-header">
+      <div class="user-info">        <div class="avatar">
+          <img [src]="profile.profileImage" [alt]="'Foto de perfil de ' + profile.name" [title]="'Foto de perfil de ' + profile.name" alt="Foto de perfil" title="Foto de perfil">
+        </div>
+        <div class="user-details">
+          <h1>{{ profile.name }}</h1>
+          <p class="location"><i class="fas fa-map-marker-alt"></i> {{ profile.province }}</p>
+          <p class="member-since"><i class="fas fa-user-clock"></i> Miembro desde {{ profile.joinDate | date:'MMMM yyyy' }}</p>
+        </div>
+      </div>
+      <div class="profile-actions">        <button type="button" class="primary-button">
+          <i class="fas fa-plus"></i> Publicar nuevo anuncio
+        </button>
+      </div>
+    </div>
+
+    <div class="profile-nav">
+      <ul class="nav-tabs">
+        <li [class.active]="activeTab === 'info'">          <button type="button" (click)="changeTab('info')">
+            <i class="fas fa-user"></i> Información personal
+          </button>
+        </li>
+        <li [class.active]="activeTab === 'ads'">          <button type="button" (click)="changeTab('ads')">
+            <i class="fas fa-bullhorn"></i> Mis anuncios
+          </button>
+        </li>
+        <li [class.active]="activeTab === 'favorites'">          <button type="button" (click)="changeTab('favorites')">
+            <i class="fas fa-heart"></i> Favoritos
+          </button>
+        </li>
+        <li [class.active]="activeTab === 'messages'">          <button type="button" (click)="changeTab('messages')">
+            <i class="fas fa-envelope"></i> Mensajes
+            @if (messageCount > 0) {
+              <span class="badge">{{ messageCount }}</span>
+            }
+          </button>
+        </li>
+        <li [class.active]="activeTab === 'settings'">          <button type="button" (click)="changeTab('settings')">
+            <i class="fas fa-cog"></i> Ajustes
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="profile-content">
+      <!-- Información personal -->
+      @if (activeTab === 'info') {
+        <div class="profile-section">
+          <div class="section-header">
+            <h2>Información personal</h2>
+            @if (!isEditing) {              <button type="button" class="edit-button" (click)="startEditing()">
+                <i class="fas fa-pencil-alt"></i> Editar
+              </button>
+            }
+          </div>
+
+          @if (!isEditing) {
+            <div class="profile-info">              <div class="info-group">
+                <label>Nombre completo</label>
+                <p>{{ profile.name }}</p>
+              </div>              <div class="info-group">
+                <label>Correo electrónico</label>
+                <p>{{ profile.mail }}</p>
+              </div>
+              <div class="info-group">
+                <label>Teléfono</label>
+                <p>{{ profile.phone }}</p>
+              </div>
+              <div class="info-group">
+                <label>Dirección</label>
+                <p>{{ profile.address }}</p>
+              </div>
+              <div class="info-group">
+                <label>Provincia</label>
+                <p>{{ profile.province }}</p>
+              </div>
+              <div class="info-group full-width">
+                <label>Sobre mí</label>
+                <p class="bio">{{ profile.about }}</p>
+              </div>
+            </div>
+          } @else if (editableProfile) {            <form class="profile-form">
+              <div class="form-group">
+                <label for="name">Nombre completo</label>
+                <input type="text" id="name" name="name" [(ngModel)]="editableProfile.name">
+              </div>              <div class="form-group">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" name="email" [(ngModel)]="editableProfile.mail">
+              </div>
+              <div class="form-group">
+                <label for="phone">Teléfono</label>
+                <input type="tel" id="phone" name="phone" [(ngModel)]="editableProfile.phone">
+              </div>
+              <div class="form-group">
+                <label for="address">Dirección</label>
+                <input type="text" id="address" name="address" [(ngModel)]="editableProfile.address">
+              </div>
+              <div class="form-group">
+                <label for="province">Provincia</label>
+                <input type="text" id="province" name="province" [(ngModel)]="editableProfile.province">
+              </div>
+              <div class="form-group">
+                <label for="website">Sitio web</label>
+                <input type="url" id="website" name="website" [(ngModel)]="editableProfile.website">
+              </div>
+              <div class="form-group full-width">
+                <label for="about">Sobre mí</label>
+                <textarea id="about" name="about" rows="5" [(ngModel)]="editableProfile.about"></textarea>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="secondary-button" (click)="cancelEditing()">Cancelar</button>
+                <button type="button" class="primary-button" (click)="saveProfile()">Guardar cambios</button>
+              </div>
+            </form>
+          }
+        </div>
+      }
+
+      <!-- Mis anuncios -->
+      @if (activeTab === 'ads') {
+        <div class="profile-section">
+          <div class="section-header">
+            <h2>Mis anuncios</h2>
+            <button class="primary-button">
+              <i class="fas fa-plus"></i> Nuevo anuncio
+            </button>
+          </div>
+
+          @if (userAds.length === 0) {
+            <div class="empty-state">
+              <i class="fas fa-bullhorn"></i>
+              <h3>Aún no tienes anuncios publicados</h3>
+              <p>Publica tu primer anuncio de animales de granja ahora mismo</p>
+              <button type="button" class="primary-button">Publicar anuncio</button>
+            </div>
+          } @else {
+            <div class="ads-list">
+              @for (ad of userAds; track ad.id) {
+                <div class="ad-card" [class.sold]="ad.status === 'sold'">                  <div class="ad-image">
+                    <img [src]="ad.thumbnailUrl" [alt]="'Imagen de ' + ad.title" [title]="'Imagen de ' + ad.title" alt="Imagen del anuncio" title="Imagen del anuncio">
+                    @if (ad.status === 'sold') {
+                      <span class="status-badge sold">Vendido</span>
+                    } @else {
+                      <span class="status-badge active">Activo</span>
+                    }
+                  </div>
+                  <div class="ad-details">
+                    <h3><a [routerLink]="['/advertisement', ad.id]">{{ ad.title }}</a></h3>
+                    <div class="ad-price">{{ ad.price | currency:'EUR':'symbol':'1.0-0' }}</div>
+                    <div class="ad-info">
+                      <span><i class="fas fa-map-marker-alt"></i> {{ ad.location }}</span>
+                      <span><i class="fas fa-calendar-alt"></i> {{ ad.publishedDate | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                    <div class="ad-stats">
+                      <span><i class="fas fa-eye"></i> {{ ad.views }} visitas</span>
+                      <span><i class="fas fa-heart"></i> {{ ad.favorites }} favoritos</span>
+                    </div>
+                  </div>
+                  <div class="ad-actions">                    <button type="button" class="action-button edit" title="Editar anuncio" aria-label="Editar anuncio">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    @if (ad.status !== 'sold') {                      <button type="button" class="action-button sold" (click)="markAsSold(ad.id)" title="Marcar como vendido" aria-label="Marcar como vendido">
+                        <i class="fas fa-check"></i>
+                      </button>
+                    }                    <button type="button" class="action-button delete" (click)="deleteAd(ad.id)" title="Eliminar anuncio" aria-label="Eliminar anuncio">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Favoritos -->
+      @if (activeTab === 'favorites') {
+        <div class="profile-section">
+          <div class="section-header">
+            <h2>Anuncios favoritos</h2>
+          </div>
+
+          @if (favoriteAds.length === 0) {
+            <div class="empty-state">
+              <i class="far fa-heart"></i>
+              <h3>No tienes anuncios guardados</h3>
+              <p>Guarda tus anuncios favoritos para volver a verlos más tarde</p>
+              <a routerLink="/" class="primary-button">Explorar anuncios</a>
+            </div>
+          } @else {
+            <div class="favorites-list">
+              @for (ad of favoriteAds; track ad.id) {
+                <div class="favorite-card">                  <div class="favorite-image">
+                    <img [src]="ad.thumbnailUrl" [alt]="'Imagen de ' + ad.title" [title]="'Imagen de ' + ad.title" alt="Imagen del anuncio favorito" title="Imagen del anuncio favorito">
+                  </div>
+                  <div class="favorite-details">
+                    <h3><a [routerLink]="['/advertisement', ad.id]">{{ ad.title }}</a></h3>
+                    <div class="favorite-price">{{ ad.price | currency:'EUR':'symbol':'1.0-0' }}</div>
+                    <div class="favorite-info">
+                      <span><i class="fas fa-map-marker-alt"></i> {{ ad.location }}</span>
+                      <span><i class="fas fa-user"></i> {{ ad.sellerName }}</span>
+                      <span><i class="fas fa-calendar-alt"></i> {{ ad.publishedDate | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                  </div>
+                  <div class="favorite-actions">                    <a [routerLink]="['/advertisement', ad.id]" class="view-button" title="Ver anuncio" aria-label="Ver anuncio">
+                      <i class="fas fa-eye"></i>
+                    </a>                    <button type="button" class="remove-button" (click)="removeFromFavorites(ad.id)" title="Eliminar de favoritos" aria-label="Eliminar de favoritos">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Mensajes -->
+      @if (activeTab === 'messages') {
+        <div class="profile-section">
+          <div class="section-header">
+            <h2>Mensajes</h2>
+          </div>
+          <div class="messages-placeholder">
+            <i class="fas fa-comment-dots"></i>
+            <h3>Centro de mensajes</h3>
+            <p>Esta funcionalidad estará disponible próximamente</p>
+          </div>
+        </div>
+      }
+
+      <!-- Ajustes -->
+      @if (activeTab === 'settings') {
+        <div class="profile-section">
+          <div class="section-header">
+            <h2>Ajustes de la cuenta</h2>
+          </div>
+          <div class="settings-section">
+            <h3>Cambiar contraseña</h3>
+            <form class="password-form">
+              <div class="form-group">
+                <label for="currentPassword">Contraseña actual</label>
+                <input type="password" id="currentPassword" name="currentPassword">
+              </div>
+              <div class="form-group">
+                <label for="newPassword">Nueva contraseña</label>
+                <input type="password" id="newPassword" name="newPassword">
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">Confirmar contraseña</label>
+                <input type="password" id="confirmPassword" name="confirmPassword">
+              </div>
+              <button type="button" class="primary-button">Actualizar contraseña</button>
+            </form>
+          </div>
+          <div class="settings-section">
+            <h3>Notificaciones</h3>
+            <div class="notification-settings">
+              <div class="notification-option">
+                <div class="option-text">
+                  <strong id="label-offers">Correos electrónicos con ofertas</strong>
+                  <p>Recibe correos con ofertas y promociones relacionadas con tus búsquedas</p>
+                </div>
+                <label class="switch" for="email-offers">
+                  <input type="checkbox" checked id="email-offers" aria-labelledby="label-offers">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="notification-option">
+                <div class="option-text">
+                  <strong id="label-messages">Mensajes de vendedores</strong>
+                  <p>Recibe notificaciones cuando un vendedor te contacte</p>
+                </div>
+                <label class="switch" for="vendor-messages">
+                  <input type="checkbox" checked id="vendor-messages" aria-labelledby="label-messages">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="notification-option">
+                <div class="option-text">
+                  <strong id="label-status">Notificaciones de estado de anuncio</strong>
+                  <p>Recibe notificaciones cuando tus anuncios reciban visitas o sean añadidos a favoritos</p>
+                </div>
+                <label class="switch" for="ad-status">
+                  <input type="checkbox" checked id="ad-status" aria-labelledby="label-status">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="settings-section danger-zone">
+            <h3>Zona de peligro</h3>
+            <button class="danger-button">
+              <i class="fas fa-trash-alt"></i> Eliminar mi cuenta
+            </button>
+            <p class="danger-text">Esta acción no se puede deshacer y eliminará todos tus datos y anuncios.</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
