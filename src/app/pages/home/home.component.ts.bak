@@ -30,6 +30,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   isMinPriceActive: boolean = false;
   isMaxPriceActive: boolean = false;
 
+
   // Available categories (species)
   categories = [
     { id: 'vacuno', name: 'Vacuno' },
@@ -81,15 +82,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
   ];
 
   // Filtered breeds based on selected category
-  filteredBreeds: { id: string, name: string, category: string }[] = [];
-  
-  constructor(
+  filteredBreeds: { id: string, name: string, category: string }[] = [];  constructor(
     private advertisementService: AdvertisementService,
     private route: ActivatedRoute,
     private router: Router
-  ) {}
-
-  ngOnInit(): void {
+  ) {}ngOnInit(): void {
     // Check if there are filters in the query params
     this.route.queryParams.subscribe(params => {
       if (params['category']) {
@@ -105,9 +102,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
             this.selectedBreed = params['breed'];
           }
         }
-      }
-      
-      // Get price filters from URL if present
+      }      // Get price filters from URL if present
       if (params['minPrice']) {
         this.minPrice = Number(params['minPrice']);
         this.isMinPriceActive = true;
@@ -120,6 +115,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
       this.loadAdvertisements();
     });
+
+    // Initialize slider track after view initialization
+    setTimeout(() => {
+      this.updateSliderTrack();
+    }, 100);
   }
 
   ngAfterViewInit(): void {
@@ -147,15 +147,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
     // Apply filters
     this.applyFilters();
   }
-
   loadAdvertisements(): void {
     this.loading = true;
     this.error = null;
 
     // Create mock data during development
-    this.createMockAdvertisements();
-    
-    // Calcular el valor máximo del slider basado en los precios de los anuncios
+    this.createMockAdvertisements();    // Calcular el valor máximo del slider basado en los precios de los anuncios
     const prices = this.advertisements.map(ad => ad.price);
     const maxPrice = Math.max(...prices);
     if (maxPrice > 0) {
@@ -174,37 +171,33 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }, 100);
 
     // In production, uncomment this code to use the real service
-    /* 
-    this.advertisementService.getAdvertisements().subscribe({
-      next: (ads) => {
-        this.advertisements = ads;
-    
-        // Calcular el valor máximo del slider basado en los precios de los anuncios
-        const prices = ads.map(ad => ad.price);
-        const maxPrice = Math.max(...prices);
-        if (maxPrice > 0) {
-          // Redondeamos hacia arriba al siguiente múltiplo de 1000 para tener un valor redondo
-          this.maxSliderValue = Math.ceil(maxPrice / 1000) * 1000;
-        }
-    
-        // Si no hay precio máximo seleccionado, inicializarlo con el valor máximo del slider
-        if (!this.isMaxPriceActive) {
-          this.maxPrice = this.maxSliderValue;
-        }
-    
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading advertisements', err);
-        this.error = 'No se pudieron cargar los anuncios. Por favor, inténtelo de nuevo más tarde.';
-        this.loading = false;
-      }
-    });
-    */
-  }
-
-  applyFilters(): void {
+    // this.advertisementService.getAdvertisements().subscribe({
+    //   next: (ads) => {
+    //     this.advertisements = ads;
+    //
+    //     // Calcular el valor máximo del slider basado en los precios de los anuncios
+    //     const prices = ads.map(ad => ad.price);
+    //     const maxPrice = Math.max(...prices);
+    //     if (maxPrice > 0) {
+    //       // Redondeamos hacia arriba al siguiente múltiplo de 1000 para tener un valor redondo
+    //       this.maxSliderValue = Math.ceil(maxPrice / 1000) * 1000;
+    //     }
+    //
+    //     // Si no hay precio máximo seleccionado, inicializarlo con el valor máximo del slider
+    //     if (this.maxPrice === null) {
+    //       this.maxPrice = this.maxSliderValue;
+    //     }
+    //
+    //     this.applyFilters();
+    //     this.loading = false;
+    //   },
+    //   error: (err) => {
+    //     console.error('Error loading advertisements', err);
+    //     this.error = 'No se pudieron cargar los anuncios. Por favor, inténtelo de nuevo más tarde.';
+    //     this.loading = false;
+    //   }
+    // });
+  }applyFilters(): void {
     let filtered = [...this.advertisements];
 
     // Filter by category (species)
@@ -218,9 +211,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       if (selectedBreedName) {
         filtered = filtered.filter(ad => ad.breed && ad.breed.toLowerCase() === selectedBreedName.toLowerCase());
       }
-    }
-    
-    // Filter by price range
+    }    // Filter by price range
     console.log(`Applying filters - Min price: ${this.minPrice}, isActive: ${this.isMinPriceActive}, Max price: ${this.maxPrice}, isActive: ${this.isMaxPriceActive}`);
     
     // Aplicar filtro de precio mínimo
@@ -241,9 +232,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.isMaxPriceActive = false;
     }
     
-    console.log(`After filtering - isMinPriceActive: ${this.isMinPriceActive}, isMaxPriceActive: ${this.isMaxPriceActive}`);
-
-    // Filter by search term
+    console.log(`After filtering - isMinPriceActive: ${this.isMinPriceActive}, isMaxPriceActive: ${this.isMaxPriceActive}`);// Filter by search term
     if (this.searchTerm.trim() !== '') {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(ad =>
@@ -255,9 +244,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       );
     }
 
-    this.filteredAds = filtered;
-    
-    // Update URL with all filters
+    this.filteredAds = filtered;    // Update URL with all filters
     const queryParams: any = {};
     if (this.selectedCategory) {
       queryParams.category = this.selectedCategory;
@@ -283,9 +270,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
         queryParamsHandling: 'merge'
       });
     }
-  }
-  
-  resetFilters(): void {
+  }  resetFilters(): void {
     this.selectedCategory = '';
     this.selectedBreed = '';
     this.minPrice = 0;
@@ -308,7 +293,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
       queryParams: {}
     });
   }
-  
   toggleFavorite(ad: Advertisement): void {
     ad.favorite = !ad.favorite;
     // In a real application, you would call the service to update the favorite status
@@ -531,9 +515,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   removeBreed(): void {
     this.selectedBreed = '';
     this.applyFilters();
-  }
-  
-  removeMinPrice(): void {
+  }  removeMinPrice(): void {
     this.minPrice = 0;
     this.isMinPriceActive = false;
     this.updateSliderTrack();
@@ -549,11 +531,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   removeSearchTerm(): void {
     this.searchTerm = '';
-    this.applyFilters();
-  }
+    this.applyFilters();  }
   
-  // Métodos para controlar el slider de precio
-  onMinSliderChange(): void {
+  // Métodos para controlar el slider de precio  onMinSliderChange(): void {
     // Si el valor mínimo es mayor que el máximo, ajustamos el valor máximo
     if (this.minPrice > this.maxPrice) {
       this.maxPrice = this.minPrice;
@@ -574,8 +554,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
     
     // Activar/desactivar flag según el valor del slider
-    this.isMaxPriceActive = this.maxPrice < this.maxSliderValue;
-    console.log(`Max slider changed: ${this.maxPrice}, active: ${this.isMaxPriceActive}`);
+    // (la aplicación real del filtro se hace en applyFilters)
+    console.log(`Max slider changed: ${this.maxPrice}`);
 
     // Actualizar el track highlight
     this.updateSliderTrack();
@@ -583,8 +563,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
   
   // Método para actualizar el aspecto visual del track del slider
   updateSliderTrack(): void {
-    const minValue = this.minPrice;
-    const maxValue = this.maxPrice;
+    // Handle null values by using default min/max
+    const minValue = this.minPrice !== null ? this.minPrice : 0;
+    const maxValue = this.maxPrice !== null ? this.maxPrice : this.maxSliderValue;
 
     const container = document.getElementById('priceSliderContainer');
     if (!container) return;

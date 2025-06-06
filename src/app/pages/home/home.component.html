@@ -13,8 +13,7 @@
             [(ngModel)]="searchTerm"
             placeholder="Buscar por título, descripción..."
             (keyup.enter)="applyFilters()"
-          >
-          <button type="button" class="search-button" (click)="applyFilters()">
+          >          <button type="button" class="search-button" (click)="applyFilters()" title="Buscar" aria-label="Buscar">
             <i class="fas fa-search"></i>
           </button>
         </div>
@@ -37,29 +36,50 @@
             <option [value]="breed.id">{{ breed.name }}</option>
           }
         </select>
-      </div>
-
-      <div class="price-filter">
-        <label>Precio:</label>
-        <div class="price-inputs">
+      </div>      <div class="price-filter">
+        <label>Precio:
+          <span class="price-range-values" [class.active-filter]="isMinPriceActive || isMaxPriceActive">
+            {{ minPrice }}€ - {{ maxPrice }}€
+          </span>
+        </label>        <div class="price-slider-container" id="priceSliderContainer">
           <input
-            type="number"
+            type="range"
+            class="price-slider min-slider"
             [(ngModel)]="minPrice"
-            placeholder="Mín €"
-            min="0"
+            [min]="0"
+            [max]="maxSliderValue"
+            (input)="onMinSliderChange()"
+            (change)="applyFilters()"
+            aria-label="Precio mínimo"
+            title="Ajusta el precio mínimo"
           >
-          <span>a</span>
           <input
-            type="number"
+            type="range"
+            class="price-slider max-slider"
             [(ngModel)]="maxPrice"
-            placeholder="Máx €"
-            min="0"
+            [min]="0"
+            [max]="maxSliderValue"
+            (input)="onMaxSliderChange()"
+            (change)="applyFilters()"
+            aria-label="Precio máximo"
+            title="Ajusta el precio máximo"
           >
-          <button type="button" class="apply-price" (click)="applyFilters()">Aplicar</button>
+          <div class="price-slider-track"></div>
+          <div class="price-slider-fill" id="priceSliderFill"></div>
+        </div>        <div class="price-values-display">
+          <span class="min-value">0€</span>
+          <span class="max-value">{{ maxSliderValue }}€</span>
         </div>
-      </div>      <button type="button" class="reset-filters" (click)="resetFilters()">
-        <i class="fas fa-undo"></i> Resetear filtros
-      </button>
+        
+        <div class="filter-buttons">
+          <button type="button" class="apply-filters" (click)="applyFilters()">
+            <i class="fas fa-filter"></i> Aplicar filtros
+          </button>
+          <button type="button" class="reset-filters" (click)="resetFilters()">
+            <i class="fas fa-undo"></i> Resetear filtros
+          </button>
+        </div>
+      </div>
     </div>
   </section><!-- Advertisements Section -->
   <section class="advertisements-section">
@@ -76,12 +96,11 @@
         <span class="filter-tag" *ngIf="selectedBreed">
           Raza: {{ getBreedName(selectedBreed) }}
           <button (click)="removeBreed()" class="remove-filter" title="Eliminar filtro">×</button>
-        </span>
-        <span class="filter-tag" *ngIf="minPrice">
+        </span>        <span class="filter-tag" *ngIf="isMinPriceActive">
           Precio mín: {{ minPrice }}€
           <button (click)="removeMinPrice()" class="remove-filter" title="Eliminar filtro">×</button>
         </span>
-        <span class="filter-tag" *ngIf="maxPrice">
+        <span class="filter-tag" *ngIf="isMaxPriceActive">
           Precio máx: {{ maxPrice }}€
           <button (click)="removeMaxPrice()" class="remove-filter" title="Eliminar filtro">×</button>
         </span>
@@ -113,9 +132,8 @@
       <div class="ads-grid">
         @for (ad of filteredAds; track ad.id) {
           <div class="ad-card">
-            <div class="ad-image">
-              @if (ad.images && ad.images.length > 0) {
-                <img [src]="ad.images[0]" [alt]="'Imagen de ' + ad.title" class="ad-thumbnail">
+            <div class="ad-image">              @if (ad.images && ad.images.length > 0) {
+                <img [src]="ad.images[0]" [alt]="'Imagen de ' + ad.title" class="ad-thumbnail" [attr.title]="ad.title">
               } @else {
                 <div class="no-image">
                   <i class="fas fa-image"></i>
@@ -140,8 +158,8 @@
               <p class="ad-date">
                 <i class="fas fa-calendar-alt"></i> {{ ad.create_at | date:'dd/MM/yyyy' }}
               </p>
-            </div>
-            <div class="ad-actions">              <button
+            </div>            <div class="ad-actions">
+              <button
                 type="button"
                 class="action-button favorite"
                 [class.is-favorite]="ad.favorite"
@@ -150,6 +168,7 @@
                 (click)="toggleFavorite(ad)"
               >
                 <i [class]="ad.favorite ? 'fas fa-heart' : 'far fa-heart'"></i>
+                <span class="sr-only">{{ ad.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos' }}</span>
               </button>
               <a [routerLink]="['/advertisement', ad.id]" class="view-button">
                 Ver anuncio <i class="fas fa-arrow-right"></i>
