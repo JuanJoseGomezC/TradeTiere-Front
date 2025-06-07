@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProfileService, UserProfile } from '../../services/profile.service';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, User } from '../../services/auth.service';
 import { AdvertisementService, Advertisement } from '../../services/advertisement.service';
 import { HttpClientModule } from '@angular/common/http';
+import { catchError, switchMap, tap, of } from 'rxjs';
 
 interface UserAd {
   id: number;
@@ -45,38 +46,62 @@ export class ProfileComponent implements OnInit {
   editableProfile: UserProfile | null = null;
   isLoading = true;
   messageCount = 5;
+  loadingError: string | null = null;
 
   constructor(
     private profileService: ProfileService,
     private authService: AuthService,
-    private advertisementService: AdvertisementService
+    private advertisementService: AdvertisementService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.isLoading = true;
-    // Get current user
-    const currentUser = this.authService.getCurrentUser();
-
-    if (currentUser && currentUser.id) {
-      // Load user profile using the profile service
-      this.profileService.getProfile(currentUser.id).subscribe(
-        (profile) => {
-          this.profile = profile;
-          this.editableProfile = { ...profile };
-          this.loadUserAds();
-          this.loadFavoriteAds();
-          this.isLoading = false;
-        },
-        (error) => {
-          console.error('Error loading profile:', error);
-          this.isLoading = false;
-        }
-      );
-    } else {
-      // No logged in user
-      this.profile = null;
-      this.isLoading = false;
+    this.loadingError = null;
+    
+    // Verificar estado de autenticación
+    if (!this.authService.isLoggedIn) {
+      console.log('ProfileComponent: Usuario no autenticado, redirigiendo a login');
+      this.router.navigate(['/login']);
+      return;
     }
+    
+    // Intentar refrescar los datos del usuario primero
+    this.authService.refreshUserData().pipe(
+      catchError(error => {
+        console.error('ProfileComponent: Error al actualizar datos del usuario:', error);
+        // Aun con error, intentar usar los datos almacenados en cache
+        return of(this.authService.getCurrentUser());
+      }),
+      switchMap(user => {
+        // Get current user después de refresh
+        const currentUser = user || this.authService.getCurrentUser();
+        
+        if (!currentUser || !currentUser.id) {
+          console.error('ProfileComponent: No hay usuario autenticado después de refresh');
+          this.loadingError = 'No se pudo cargar el perfil. Por favor, inicia sesión nuevamente.';
+          this.isLoading = false;
+          return of(null);
+        }
+        
+        console.log('ProfileComponent: Cargando perfil con ID:', currentUser.id);
+        return this.profileService.getProfile(currentUser.id).pipe(
+          tap(profile => {
+            this.profile = profile;
+            this.editableProfile = { ...profile };
+            this.loadUserAds();
+            this.loadFavoriteAds();
+            this.isLoading = false;
+          }),
+          catchError(error => {
+            console.error('ProfileComponent: Error cargando perfil:', error);
+            this.loadingError = 'Error al cargar el perfil. Inténtalo más tarde.';
+            this.isLoading = false;
+            return of(null);
+          })
+        );
+      })
+    ).subscribe();
   }
 
   loadUserAds(): void {
@@ -84,9 +109,9 @@ export class ProfileComponent implements OnInit {
       // Use advertisement service to get user's ads
       this.advertisementService.getUserAdvertisements(this.profile.mail).subscribe(
         (ads) => {
-          // Map the API advertisements to the UI representation
+        // Map the API advertisements to the UI representation
           this.userAds = ads.map(ad => ({
-            id: ad.id,
+            id: ad.id ?? 0, // Provide a default value of 0 if id is undefined
             title: ad.title,
             price: ad.price,
             location: this.getLocationName(ad.location),
@@ -104,9 +129,7 @@ export class ProfileComponent implements OnInit {
     } else {
       this.userAds = [];
     }
-  }
-
-  // Helper method to convert location ID to readable name
+  }  // Helper method to convert location ID to readable name
   private getLocationName(locationId: number): string {
     // This would ideally come from a location service or API
     const locationMap: Record<number, string> = {

@@ -15,12 +15,17 @@ export class ApiService {
    */
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('auth_token');
-    return new HttpHeaders({
+    let headers = new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
     });
-  }
 
+    // Solo añadir el token de autorización si existe
+    if (token) {
+      headers = headers.append('Authorization', `Bearer ${token}`);
+    }
+
+    return headers;
+  }
   /**
    * Generic GET method
    */
@@ -29,6 +34,7 @@ export class ApiService {
       headers: this.getHeaders(),
       params: params
     };
+    console.log(`ApiService: Realizando GET a ${endpoint}`, { params });
     return this.http.get<T>(`${this.baseUrl}${endpoint}`, options);
   }
 
@@ -39,6 +45,7 @@ export class ApiService {
     const options = {
       headers: this.getHeaders()
     };
+    console.log(`ApiService: Realizando POST a ${endpoint}`, body);
     return this.http.post<T>(`${this.baseUrl}${endpoint}`, body, options);
   }
 

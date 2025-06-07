@@ -5,19 +5,18 @@
       <p>Regístrate para publicar y gestionar tus anuncios de animales</p>
     </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
-      <!-- Full Name Field -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">      <!-- First Name Field -->
       <div class="form-group">
-        <label for="name">Nombre completo</label>
+        <label for="name">Nombre</label>
         <div class="input-container">
           <span class="input-icon">
             <i class="fas fa-user"></i>
           </span>
-          <input 
-            type="text" 
-            id="name" 
-            formControlName="name" 
-            placeholder="Tu nombre completo" 
+          <input
+            type="text"
+            id="name"
+            formControlName="name"
+            placeholder="Tu nombre"
             [ngClass]="{'is-invalid': nameInvalid}"
           >
         </div>
@@ -32,6 +31,32 @@
         }
       </div>
 
+      <!-- Last Name Field -->
+      <div class="form-group">
+        <label for="lastname">Apellidos</label>
+        <div class="input-container">
+          <span class="input-icon">
+            <i class="fas fa-user"></i>
+          </span>
+          <input
+            type="text"
+            id="lastname"
+            formControlName="lastname"
+            placeholder="Tus apellidos"
+            [ngClass]="{'is-invalid': lastnameInvalid}"
+          >
+        </div>
+        @if (lastnameInvalid) {
+          <div class="error-message">
+            @if (lastnameControl?.errors?.['required']) {
+              <span>El apellido es obligatorio</span>
+            } @else if (lastnameControl?.errors?.['minlength']) {
+              <span>El apellido debe tener al menos 2 caracteres</span>
+            }
+          </div>
+        }
+      </div>
+
       <!-- Email Field -->
       <div class="form-group">
         <label for="email">Email</label>
@@ -39,11 +64,11 @@
           <span class="input-icon">
             <i class="fas fa-envelope"></i>
           </span>
-          <input 
-            type="email" 
-            id="email" 
-            formControlName="email" 
-            placeholder="Tu email" 
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            placeholder="Tu email"
             [ngClass]="{'is-invalid': emailInvalid}"
           >
         </div>
@@ -56,6 +81,27 @@
             }
           </div>
         }
+      </div>      <!-- Birthdate Field -->
+      <div class="form-group">
+        <label for="birthdate">Fecha de Nacimiento</label>
+        <div class="input-container">
+          <span class="input-icon">
+            <i class="fas fa-calendar"></i>
+          </span>
+          <input
+            type="date"
+            id="birthdate"
+            formControlName="birthdate"
+            [ngClass]="{'is-invalid': birthdateInvalid}"
+          >
+        </div>
+        @if (birthdateInvalid) {
+          <div class="error-message">
+            @if (birthdateControl?.errors?.['required']) {
+              <span>La fecha de nacimiento es obligatoria</span>
+            }
+          </div>
+        }
       </div>
 
       <!-- Phone Field -->
@@ -65,11 +111,11 @@
           <span class="input-icon">
             <i class="fas fa-phone"></i>
           </span>
-          <input 
-            type="tel" 
-            id="phone" 
-            formControlName="phone" 
-            placeholder="Número de teléfono" 
+          <input
+            type="tel"
+            id="phone"
+            formControlName="phone"
+            placeholder="Número de teléfono"
             [ngClass]="{'is-invalid': phoneInvalid}"
           >
         </div>
@@ -91,16 +137,16 @@
           <span class="input-icon">
             <i class="fas fa-lock"></i>
           </span>
-          <input 
-            [type]="showPassword ? 'text' : 'password'" 
-            id="password" 
-            formControlName="password" 
-            placeholder="Crea una contraseña" 
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            formControlName="password"
+            placeholder="Crea una contraseña"
             [ngClass]="{'is-invalid': passwordInvalid}"
           >
-          <button 
-            type="button" 
-            class="toggle-password" 
+          <button
+            type="button"
+            class="toggle-password"
             (click)="togglePasswordVisibility()"
             tabindex="-1"
             title="Mostrar/ocultar contraseña"
@@ -127,16 +173,16 @@
           <span class="input-icon">
             <i class="fas fa-lock"></i>
           </span>
-          <input 
-            [type]="showConfirmPassword ? 'text' : 'password'" 
-            id="confirmPassword" 
-            formControlName="confirmPassword" 
-            placeholder="Repite tu contraseña" 
+          <input
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            id="confirmPassword"
+            formControlName="confirmPassword"
+            placeholder="Repite tu contraseña"
             [ngClass]="{'is-invalid': confirmPasswordInvalid}"
           >
-          <button 
-            type="button" 
-            class="toggle-password" 
+          <button
+            type="button"
+            class="toggle-password"
             (click)="toggleConfirmPasswordVisibility()"
             tabindex="-1"
             title="Mostrar/ocultar contraseña"
@@ -159,10 +205,10 @@
       <!-- Terms and Conditions -->
       <div class="form-group terms-checkbox">
         <div class="checkbox-container">
-          <input 
-            type="checkbox" 
-            id="termsAccepted" 
-            formControlName="termsAccepted" 
+          <input
+            type="checkbox"
+            id="termsAccepted"
+            formControlName="termsAccepted"
             [ngClass]="{'is-invalid': termsInvalid}"
           >
           <label for="termsAccepted">
@@ -186,9 +232,9 @@
 
       <!-- Submit Button -->
       <div class="form-group">
-        <button 
-          type="submit" 
-          class="register-button" 
+        <button
+          type="submit"
+          class="register-button"
           [disabled]="isSubmitting"
         >
           @if (isSubmitting) {

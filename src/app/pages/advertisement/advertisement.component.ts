@@ -162,9 +162,10 @@ export class AdvertisementComponent implements OnInit {
   goBack() {
     this.router.navigate(['/']);
   }
-
-  viewRelatedAd(adId: number) {
-    this.router.navigate(['/advertisement', adId]);
+  viewRelatedAd(adId: number | undefined) {
+    if (adId !== undefined) {
+      this.router.navigate(['/advertisement', adId]);
+    }
   }
 
   getAge(): string {
