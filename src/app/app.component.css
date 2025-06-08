@@ -46,6 +46,7 @@ body {
 
 /* Encabezado */
 .site-header {
+  padding: 15px 0;
   background-color: var(--header-bg);
   box-shadow: var(--shadow-sm);
   position: sticky;

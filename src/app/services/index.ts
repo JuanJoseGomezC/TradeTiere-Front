@@ -2,7 +2,7 @@
 
 export * from './api.service';
 export * from './auth.service';
-export * from './advertisement.service';
+export * from './advertisment.service';
 export * from './example-integration.service';
 export * from './language.service';
 export * from './location.service';

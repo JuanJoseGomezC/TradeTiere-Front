@@ -4,9 +4,10 @@ import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProfileService, UserProfile } from '../../services/profile.service';
 import { AuthService, User } from '../../services/auth.service';
-import { AdvertisementService, Advertisement } from '../../services/advertisement.service';
 import { HttpClientModule } from '@angular/common/http';
 import { catchError, switchMap, tap, of } from 'rxjs';
+import { CreateAdModalComponent } from "../../components/create-ad-modal/create-ad-modal.component";
+import { AdvertismentService } from '../../services/advertisment.service';
 
 interface UserAd {
   id: number;
@@ -33,7 +34,7 @@ interface FavoriteAd {
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, HttpClientModule],
+  imports: [CommonModule, RouterLink, FormsModule, HttpClientModule, CreateAdModalComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
@@ -47,25 +48,26 @@ export class ProfileComponent implements OnInit {
   isLoading = true;
   messageCount = 5;
   loadingError: string | null = null;
+  showCreateAdModal = false;
 
   constructor(
     private profileService: ProfileService,
     private authService: AuthService,
-    private advertisementService: AdvertisementService,
+    private advertismentService: AdvertismentService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.isLoading = true;
     this.loadingError = null;
-    
+
     // Verificar estado de autenticación
     if (!this.authService.isLoggedIn) {
       console.log('ProfileComponent: Usuario no autenticado, redirigiendo a login');
       this.router.navigate(['/login']);
       return;
     }
-    
+
     // Intentar refrescar los datos del usuario primero
     this.authService.refreshUserData().pipe(
       catchError(error => {
@@ -76,14 +78,14 @@ export class ProfileComponent implements OnInit {
       switchMap(user => {
         // Get current user después de refresh
         const currentUser = user || this.authService.getCurrentUser();
-        
+
         if (!currentUser || !currentUser.id) {
           console.error('ProfileComponent: No hay usuario autenticado después de refresh');
           this.loadingError = 'No se pudo cargar el perfil. Por favor, inicia sesión nuevamente.';
           this.isLoading = false;
           return of(null);
         }
-        
+
         console.log('ProfileComponent: Cargando perfil con ID:', currentUser.id);
         return this.profileService.getProfile(currentUser.id).pipe(
           tap(profile => {
@@ -92,6 +94,7 @@ export class ProfileComponent implements OnInit {
             this.loadUserAds();
             this.loadFavoriteAds();
             this.isLoading = false;
+            console.log(profile);
           }),
           catchError(error => {
             console.error('ProfileComponent: Error cargando perfil:', error);
@@ -106,10 +109,10 @@ export class ProfileComponent implements OnInit {
 
   loadUserAds(): void {
     if (this.profile && this.profile.mail) {
-      // Use advertisement service to get user's ads
-      this.advertisementService.getUserAdvertisements(this.profile.mail).subscribe(
+      // Use advertisment service to get user's ads
+      this.advertismentService.getUserAdvertisments(this.profile.mail).subscribe(
         (ads) => {
-        // Map the API advertisements to the UI representation
+        // Map the API advertisments to the UI representation
           this.userAds = ads.map(ad => ({
             id: ad.id ?? 0, // Provide a default value of 0 if id is undefined
             title: ad.title,
@@ -146,7 +149,7 @@ export class ProfileComponent implements OnInit {
   loadFavoriteAds(): void {
     if (this.profile && this.profile.id) {
       // TODO: Replace with actual API call when favorites endpoint is available
-      // this.advertisementService.getUserFavorites(this.profile.id).subscribe(
+      // this.advertismentService.getUserFavorites(this.profile.id).subscribe(
       //   (favoriteAds) => {
       //     this.favoriteAds = favoriteAds.map(ad => ({
       //       id: ad.id,
@@ -230,11 +233,20 @@ export class ProfileComponent implements OnInit {
     this.favoriteAds = this.favoriteAds.filter(ad => ad.id !== adId);
     // TODO: Implement when API is ready
     // if (this.profile && this.profile.id) {
-    //   this.advertisementService.removeFromFavorites(this.profile.id, adId).subscribe(
+    //   this.advertismentService.removeFromFavorites(this.profile.id, adId).subscribe(
     //     () => console.log('Ad removed from favorites'),
     //     (error) => console.error('Error removing from favorites:', error)
     //   );
     // }
+  }
+  openCreateAdModal() {
+    this.showCreateAdModal = true;
+   document.body.classList.add('modal-open');
+  }
+
+  closeCreateAdModal() {
+    this.showCreateAdModal = false;
+    document.body.classList.remove('modal-open');
   }
 
   markAsSold(adId: number): void {
@@ -243,7 +255,7 @@ export class ProfileComponent implements OnInit {
       ad.status = 'sold';
 
       // Update in the backend - set state to false (sold)
-      this.advertisementService.updateAdStatus(adId, false).subscribe(
+      this.advertismentService.updateAdStatus(adId, false).subscribe(
         () => console.log('Ad marked as sold'),
         (error) => console.error('Error marking ad as sold:', error)
       );
@@ -252,7 +264,7 @@ export class ProfileComponent implements OnInit {
 
   deleteAd(adId: number): void {
     if (confirm('¿Estás seguro de que quieres eliminar este anuncio?')) {
-      this.advertisementService.deleteAdvertisement(adId).subscribe(
+      this.advertismentService.deleteAdvertisment(adId).subscribe(
         () => {
           this.userAds = this.userAds.filter(ad => ad.id !== adId);
           console.log('Ad deleted successfully');

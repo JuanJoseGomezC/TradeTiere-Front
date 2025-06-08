@@ -4,21 +4,37 @@
       <a routerLink="/" class="logo">TradeTiere</a>
       <span class="tagline">Compra y venta de animales de granja</span>
     </div>
-
-    <div class="search-container">
-      <div class="search-box">
-        <input type="text" placeholder="Buscar animales, razas...">        <button type="button" class="search-button" aria-label="Buscar">
-          <i class="fas fa-search"></i>
-        </button>
-      </div>
-    </div>    <nav class="user-nav">
+    <nav class="user-nav">
       <ul class="nav-list">
-        <li><a routerLink="/login" routerLinkActive="active">Iniciar sesión</a></li>
-        <li><a routerLink="/register" routerLinkActive="active" class="register-btn">Registrarse</a></li>
-        <li><a routerLink="/profile" routerLinkActive="active">Mi cuenta</a></li>
-        <li><a (click)="openCreateAdModal()" class="post-ad-btn">Publicar anuncio</a></li>
+        @if (!isAuthenticated) {
+        <li>
+          <a routerLink="/login" routerLinkActive="active">Iniciar sesión</a>
+        </li>
+        <li>
+          <a
+            routerLink="/register"
+            routerLinkActive="active"
+            class="register-btn"
+            >Registrarse</a
+          >
+        </li>
+        }
+
+        <!-- Botones para usuarios autenticados -->
+        @if (isAuthenticated) {
+        <li>
+          <a (click)="openCreateAdModal()" class="post-ad-btn"
+            >Publicar anuncio</a
+          >
+        </li>
+        <li>
+          <a routerLink="/profile" routerLinkActive="active">Mi cuenta</a>
+        </li>
+        <li><a (click)="logout()" class="logout-btn">Cerrar sesión</a></li>
+        }
       </ul>
-    </nav>  </div>
+    </nav>
+  </div>
 </header>
 
 <main class="main-content">
@@ -29,7 +45,10 @@
   <div class="footer-container">
     <div class="footer-section">
       <h3>TradeTiere</h3>
-      <p>El mercado de referencia para compra y venta de animales de granja en España.</p>
+      <p>
+        El mercado de referencia para compra y venta de animales de granja en
+        España.
+      </p>
     </div>
     <div class="footer-section">
       <h4>Categorías</h4>
@@ -72,4 +91,7 @@
 </footer>
 
 <!-- Modal de creación de anuncio -->
-<app-create-ad-modal *ngIf="showCreateAdModal" (closeModal)="closeCreateAdModal()"></app-create-ad-modal>
+<app-create-ad-modal
+  *ngIf="showCreateAdModal"
+  (closeModal)="closeCreateAdModal()"
+></app-create-ad-modal>

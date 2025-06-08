@@ -14,16 +14,6 @@ export interface UpdateSpecieDto {
   language?: number;
 }
 
-/**
- * Frontend model enriched with extra properties
- */
-export interface Specie extends SpecieDto {
-  displayName?: string;
-  description?: string;
-  icon?: string;
-  categoryKey?: string;
-}
-
 // Allowed category keys
 export type CategoryKey = 'vacuno' | 'ovino' | 'caprino' | 'porcino' | 'avicola' | 'equino' | 'otros';
 
@@ -84,7 +74,7 @@ export class SpecieService {
   /**
    * Get all species with enhanced frontend properties
    */
-  getAllEnhanced(): Observable<Specie[]> {
+  getAllEnhanced(): Observable<SpecieDto[]> {
     return this.apiService.get<SpecieDto[]>(this.endpoint).pipe(
       map(species => species.map(specie => this.enhanceSpecie(specie)))
     );
@@ -93,18 +83,10 @@ export class SpecieService {
   /**
    * Enhances a species DTO with frontend-specific properties
    */
-  private enhanceSpecie(specieDto: SpecieDto): Specie {
+  private enhanceSpecie(specieDto: SpecieDto): SpecieDto {
     const categoryKey = specieDto.id ? SPECIES_CATEGORIES[specieDto.id] : undefined;
-    
-    return {
-      ...specieDto,
-      categoryKey,
-      displayName: this.getDisplayName(specieDto.name),
-      // Default icon based on category
-      icon: this.getCategoryIcon(categoryKey),
-      // Add a generic description
-      description: `Animales de la especie ${specieDto.name}`
-    };
+
+    return specieDto;
   }
 
   /**
@@ -127,9 +109,9 @@ export class SpecieService {
       'equino': 'assets/images/icons/horse.svg',
       'otros': 'assets/images/icons/paw.svg'
     };
-    
-    return categoryKey && (categoryKey as CategoryKey) in iconMap 
-      ? iconMap[categoryKey as CategoryKey] 
+
+    return categoryKey && (categoryKey as CategoryKey) in iconMap
+      ? iconMap[categoryKey as CategoryKey]
       : iconMap['otros'];
   }
 }

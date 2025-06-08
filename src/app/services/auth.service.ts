@@ -47,11 +47,13 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser = this.currentUserSubject.asObservable();
   private tokenKey = 'auth_token';
-  
+
   constructor(private http: HttpClient, private router: Router, private apiService: ApiService) {
     this.loadUserFromStorage();
   }
-  
+  public isAuthenticated$: Observable<boolean> = this.currentUserSubject.asObservable().pipe(
+    map(user => !!user)
+  );
   private loadUserFromStorage() {
     const token = localStorage.getItem(this.tokenKey);
     const userJson = localStorage.getItem('current_user');
@@ -86,7 +88,7 @@ export class AuthService {
   public get currentUserValue(): User | null {
     return this.currentUserSubject.value;
   }
-  
+
   public get isLoggedIn(): boolean {
     return !!this.currentUserSubject.value;
   }
@@ -97,7 +99,7 @@ export class AuthService {
   getCurrentUser(): User | null {
     return this.currentUserValue;
   }
-  
+
   /**
    * Refreshes user information from the API
    */
@@ -142,8 +144,8 @@ export class AuthService {
         return throwError(() => new Error('Error al obtener datos del usuario.'));
       })
     );
-  }  
-  
+  }
+
   login(email: string, password: string): Observable<User> {
     // Use the ApiService to call the backend login endpoint
     const loginDto: LoginDto = { mail: email, password };
@@ -159,7 +161,7 @@ export class AuthService {
         if (!response || !response.token) {
           throw new Error('Respuesta inválida del servidor: falta el token');
         }
-        
+
         // Store token in local storage
         localStorage.setItem(this.tokenKey, response.token);
 
@@ -176,14 +178,14 @@ export class AuthService {
           name: '',
           lastname: ''
         };
-        
+
         localStorage.setItem('current_user', JSON.stringify(dummyUser));
         this.currentUserSubject.next(dummyUser);
       }),
       // Luego, obtener los datos completos del usuario
       switchMap(() => {
         console.log('AuthService: Obteniendo datos completos del usuario');
-        return this.refreshUserData(); 
+        return this.refreshUserData();
       }),
       // Capturar cualquier error durante el procesamiento
       catchError(error => {
@@ -193,7 +195,7 @@ export class AuthService {
         if (error.status === 401) {
           return throwError(() => new Error('Credenciales inválidas. Por favor, inténtelo de nuevo.'));
         }
-        
+
         // Para otros errores, mensaje genérico
         return throwError(() => new Error('Error durante el inicio de sesión. Por favor, inténtelo de nuevo.'));
       })
@@ -208,7 +210,7 @@ export class AuthService {
         console.log('AuthService: Registro exitoso, respuesta:', response);
         // Store token in local storage
         localStorage.setItem(this.tokenKey, response.token);
-        
+
         // Establecer fecha de expiración de la sesión (por ejemplo, 7 días)
         const expirationDate = new Date();
         expirationDate.setDate(expirationDate.getDate() + 7); // 7 días a partir de ahora
@@ -228,7 +230,7 @@ export class AuthService {
       // Luego, obtener los datos completos del usuario
       switchMap(() => {
         console.log('AuthService: Obteniendo datos completos del usuario después del registro');
-        return this.refreshUserData(); 
+        return this.refreshUserData();
       }),
       catchError(error => {
         console.error('AuthService: Error en el registro:', error);
@@ -236,7 +238,7 @@ export class AuthService {
       })
     );
   }
-  
+
   logout() {
     // Remove user from local storage and set current user to null
     localStorage.removeItem(this.tokenKey);
@@ -246,7 +248,7 @@ export class AuthService {
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
   }
-  
+
   updateProfile(userData: Partial<User>): Observable<User> {
     const currentUser = this.currentUserValue;
 
@@ -279,12 +281,12 @@ export class AuthService {
    */
   renewSession(): void {
     if (!this.isLoggedIn) return;
-    
+
     // Establecer una nueva fecha de expiración (por ejemplo, 7 días)
     const expirationDate = new Date();
     expirationDate.setDate(expirationDate.getDate() + 7); // 7 días a partir de ahora
     localStorage.setItem('session_expiration', expirationDate.toISOString());
-    
+
     console.log('AuthService: Sesión renovada hasta', expirationDate.toLocaleString());
   }
 }

@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { delay, catchError, tap, map } from 'rxjs/operators';
 import { User } from './auth.service';
-import { Advertisement } from './advertisement.service';
 import { ApiService } from './api.service';
 
 export interface UserProfile extends User {
@@ -36,17 +35,17 @@ export interface UpdateProfileDto {
 export class ProfileService {
   constructor(private apiService: ApiService) { }
   getProfile(userId: number): Observable<UserProfile> {
-    return this.apiService.get<UserProfile>(`/users/${userId}`);
+    return this.apiService.get<UserProfile>(`/user/${userId}`);
   }
   updateProfile(profileData: Partial<UserProfile>): Observable<UserProfile> {
     if (!profileData.id) {
       return throwError(() => new Error('Usuario no especificado'));
     }
 
-    return this.apiService.put<UserProfile>(`/users/${profileData.id}`, profileData);
+    return this.apiService.put<UserProfile>(`/user/updateProfile`, profileData);
   }
   changePassword(userId: number, currentPassword: string, newPassword: string): Observable<boolean> {
-    return this.apiService.post<any>(`/users/${userId}/change-password`, {
+    return this.apiService.post<any>(`/user/${userId}/change-password`, {
       currentPassword,
       newPassword
     }).pipe(
@@ -57,7 +56,7 @@ export class ProfileService {
     );
   }
   updateNotificationSettings(userId: number, settings: any): Observable<boolean> {
-    return this.apiService.put<any>(`/users/${userId}/notifications`, settings).pipe(
+    return this.apiService.put<any>(`/user/${userId}/notifications`, settings).pipe(
       map(() => true),
       catchError(err => {
         return throwError(() => new Error('Error al actualizar las notificaciones'));
@@ -65,7 +64,7 @@ export class ProfileService {
     );
   }
   deleteAccount(userId: number): Observable<boolean> {
-    return this.apiService.delete<any>(`/users/${userId}`).pipe(
+    return this.apiService.delete<any>(`/user/${userId}`).pipe(
       map(() => true),
       catchError(err => {
         return throwError(() => new Error('Error al eliminar la cuenta'));
@@ -76,6 +75,6 @@ export class ProfileService {
    * Get user's messages
    */
   getUserMessages(userId: number): Observable<any[]> {
-    return this.apiService.get<any[]>(`/users/${userId}/messages`);
+    return this.apiService.get<any[]>(`/user/${userId}/messages`);
   }
 }

@@ -84,8 +84,8 @@ export class UserService {
   /**
    * Get user's ads
    */
-  getUserAdvertisements(userId: number): Observable<any[]> {
-    return this.apiService.get<any[]>(`${this.endpoint}/${userId}/advertisements`);
+  getUserAdvertisments(userId: number): Observable<any[]> {
+    return this.apiService.get<any[]>(`${this.endpoint}/${userId}/advertisments`);
   }
 
   /**
@@ -96,17 +96,17 @@ export class UserService {
   }
 
   /**
-   * Add advertisement to favorites
+   * Add advertisment to favorites
    */
-  addFavorite(userId: number, advertisementId: number): Observable<any> {
-    return this.apiService.post<any>(`${this.endpoint}/${userId}/favorites`, { advertisementId });
+  addFavorite(userId: number, advertismentId: number): Observable<any> {
+    return this.apiService.post<any>(`${this.endpoint}/${userId}/favorites`, { advertismentId });
   }
 
   /**
-   * Remove advertisement from favorites
+   * Remove advertisment from favorites
    */
-  removeFavorite(userId: number, advertisementId: number): Observable<any> {
-    return this.apiService.delete(`${this.endpoint}/${userId}/favorites/${advertisementId}`);
+  removeFavorite(userId: number, advertismentId: number): Observable<any> {
+    return this.apiService.delete(`${this.endpoint}/${userId}/favorites/${advertismentId}`);
   }
   /**
    * Enhances a user DTO with frontend-specific properties

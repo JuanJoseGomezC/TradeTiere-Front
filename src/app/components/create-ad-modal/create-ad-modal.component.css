@@ -12,8 +12,27 @@
   animation: fadeIn 0.3s;
 }
 
+.mat-icon {
+  overflow: visible;
+}
+
+button[mat-stroked-button][color="primary"].mat-mdc-outlined-button.mat-primary {
+  color: #a9957ef7;
+  /* Cambia el color del texto */
+  border-color: #bfd1e2;
+  /* Cambia el color del borde */
+}
+
+button[mat-stroked-button][color="primary"].mat-mdc-outlined-button.mat-primary:hover {
+  background-color: #736555;
+}
+.modal-header{
+  display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 .modal-container {
-  width: 90%;
+  width: 95%;
   max-width: 600px;
   max-height: 90vh;
   background-color: var(--card-bg);
@@ -25,12 +44,26 @@
   overflow: hidden;
 }
 
-.modal-header {
+::ng-deep .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  background-color: #73655596 !important;
+}
+
+.form-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem;
-  border-bottom: 1px solid var(--border-color);
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+::ng-deep div.mat-mdc-autocomplete-panel {
+  background-color: #736555 !important;
+}
+
+::ng-deep div.mat-mdc-select-panel {
+  background-color: #47423c !important;
+}
+::ng-deep .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled):not(.mat-mdc-option-multiple){
+
+  background-color: #605a51 !important
 }
 
 .modal-header h2 {
@@ -39,7 +72,12 @@
   margin: 0;
   font-weight: 600;
 }
-
+fieldset{
+  border: none;
+}
+fieldset>legend{
+  margin: 10px 0;
+}
 .close-button {
   background: transparent;
   border: none;
@@ -53,6 +91,22 @@
   height: 32px;
   border-radius: 50%;
   transition: all 0.2s;
+}
+
+.full-width {
+  width: 95%;
+  margin-left: 2.5%;
+}
+
+.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  background-color: #47423c !important;
+}
+::ng-deep .mat-mdc-button:not(:disabled) {
+  color: #736555 !important;
+}
+mat-form-field {
+  min-width: 46% !important;
+  color: #5A504A !important;
 }
 
 .close-button:hover {
@@ -115,9 +169,10 @@
   .form-group select.dark-select {
     border-color: var(--tradetiere-medium-brown);
   }
-  
+
   .form-group select.dark-select option {
-    background-color: #5A504A; /* Un tono más claro para mejor legibilidad */
+    background-color: #5A504A;
+    /* Un tono más claro para mejor legibilidad */
     color: white;
   }
 }
@@ -263,13 +318,23 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideIn {
@@ -277,6 +342,7 @@
     transform: translateY(-30px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -294,7 +360,8 @@
     flex-direction: column;
   }
 
-  .cancel-button, .submit-button {
+  .cancel-button,
+  .submit-button {
     width: 100%;
   }
 }

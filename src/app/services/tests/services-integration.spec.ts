@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { AdvertisementService } from '../advertisement.service';
+import { AdvertismentService } from '../advertisment.service';
 import { SpecieService } from '../specie.service';
 import { RaceService } from '../race.service';
 import { LocationService } from '../location.service';
@@ -11,7 +11,7 @@ import { ApiService } from '../api.service';
 
 describe('Services Integration', () => {
   let httpTestingController: HttpTestingController;
-  let advertisementService: AdvertisementService;
+  let advertismentService: AdvertismentService;
   let specieService: SpecieService;
   let raceService: RaceService;
   let locationService: LocationService;
@@ -25,7 +25,7 @@ describe('Services Integration', () => {
       imports: [HttpClientTestingModule],
       providers: [
         ApiService,
-        AdvertisementService,
+        AdvertismentService,
         SpecieService,
         RaceService,
         LocationService,
@@ -37,7 +37,7 @@ describe('Services Integration', () => {
 
     httpTestingController = TestBed.inject(HttpTestingController);
     apiService = TestBed.inject(ApiService);
-    advertisementService = TestBed.inject(AdvertisementService);
+    advertismentService = TestBed.inject(AdvertismentService);
     specieService = TestBed.inject(SpecieService);
     raceService = TestBed.inject(RaceService);
     locationService = TestBed.inject(LocationService);
@@ -50,8 +50,8 @@ describe('Services Integration', () => {
     httpTestingController.verify();
   });
 
-  // Sample test for Advertisement Service
-  it('should get advertisements', () => {
+  // Sample test for Advertisment Service
+  it('should get advertisments', () => {
     const mockAds = [
       {
         id: 1,
@@ -69,13 +69,13 @@ describe('Services Integration', () => {
       }
     ];
 
-    advertisementService.getAdvertisements().subscribe(ads => {
+    advertismentService.getAdvertisments().subscribe(ads => {
       expect(ads.length).toBe(1);
       expect(ads[0].title).toBe('Test Ad');
       expect(ads[0].category).toBeDefined();
     });
 
-    const req = httpTestingController.expectOne('http://localhost:8080/api/v1/advertisement');
+    const req = httpTestingController.expectOne('http://localhost:8080/api/v1/advertisment');
     expect(req.request.method).toEqual('GET');
     req.flush(mockAds);
   });

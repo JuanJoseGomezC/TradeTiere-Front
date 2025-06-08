@@ -14,15 +14,15 @@
   </button>
 </div>
 
-<!-- Advertisement Content -->
-<div *ngIf="!loading && !error && advertisement" class="advertisement-container">
+<!-- Advertisment Content -->
+<div *ngIf="!loading && !error && advertisment" class="advertisment-container">
   <!-- Breadcrumbs -->
   <nav class="breadcrumbs" aria-label="Navegación">
     <a routerLink="/">Inicio</a>
     <span>/</span>
     <a routerLink="/search">Anuncios</a>
     <span>/</span>
-    <span>{{ advertisement.title }}</span>
+    <span>{{ advertisment.title }}</span>
   </nav>
 
   <div class="ad-content">
@@ -31,16 +31,16 @@
       <!-- Image Gallery -->
       <section class="ad-gallery" aria-label="Galería de imágenes">        <div class="main-image-container">
           <img
-            [src]="advertisement.images?.[currentImageIndex] || 'https://via.placeholder.com/800x600?text=Sin+Imagen'"
-            [alt]="'Imagen ' + (currentImageIndex + 1) + ' de ' + advertisement.title"
-            [title]="'Imagen ' + (currentImageIndex + 1) + ' de ' + advertisement.title"
+            [src]="advertisment.images?.[currentImageIndex] || 'https://via.placeholder.com/800x600?text=Sin+Imagen'"
+            [alt]="'Imagen ' + (currentImageIndex + 1) + ' de ' + advertisment.title"
+            [title]="'Imagen ' + (currentImageIndex + 1) + ' de ' + advertisment.title"
             class="main-image"
             loading="lazy"
           >
 
           <!-- Navigation buttons -->
           <button
-            *ngIf="advertisement.images && advertisement.images.length > 1"
+            *ngIf="advertisment.images && advertisment.images.length > 1"
             class="gallery-nav prev"
             (click)="prevImage()"
             [disabled]="currentImageIndex === 0"
@@ -49,27 +49,27 @@
             <i class="fas fa-chevron-left"></i>
           </button>
             <button
-            *ngIf="advertisement.images && advertisement.images.length > 1"
+            *ngIf="advertisment.images && advertisment.images.length > 1"
             class="gallery-nav next"
             (click)="nextImage()"
-            [disabled]="currentImageIndex === (advertisement.images.length - 1)"
+            [disabled]="currentImageIndex === (advertisment.images.length - 1)"
             aria-label="Siguiente imagen"
           >
             <i class="fas fa-chevron-right"></i>
           </button>
 
           <!-- Image counter -->
-          <div *ngIf="advertisement.images && advertisement.images.length > 1" class="image-counter">
-            {{ currentImageIndex + 1 }} / {{ advertisement.images.length }}
+          <div *ngIf="advertisment.images && advertisment.images.length > 1" class="image-counter">
+            {{ currentImageIndex + 1 }} / {{ advertisment.images.length }}
           </div>
         </div>
           <!-- Thumbnails -->
-        <div *ngIf="advertisement.images && advertisement.images.length > 1" class="thumbnails">
+        <div *ngIf="advertisment.images && advertisment.images.length > 1" class="thumbnails">
           <img
-            *ngFor="let image of advertisement.images; let i = index"
+            *ngFor="let image of advertisment.images; let i = index"
             [src]="image"
-            [alt]="'Miniatura ' + (i + 1) + ' de ' + advertisement.title"
-            [title]="'Miniatura ' + (i + 1) + ' de ' + advertisement.title"
+            [alt]="'Miniatura ' + (i + 1) + ' de ' + advertisment.title"
+            [title]="'Miniatura ' + (i + 1) + ' de ' + advertisment.title"
             class="thumbnail"
             [class.active]="i === currentImageIndex"
             (click)="selectImage(i)"
@@ -78,14 +78,14 @@
         </div>
       </section>
 
-      <!-- Advertisement Details -->
+      <!-- Advertisment Details -->
       <section class="ad-details">
         <header class="ad-header">
-          <h1>{{ advertisement.title }}</h1>
+          <h1>{{ advertisment.title }}</h1>
           <div class="ad-price">{{ formatPrice() }}</div>
           <div class="ad-location">
             <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-            <span>{{ advertisement.province }}</span>
+            <span>{{ advertisment.province }}</span>
           </div>
         </header>
 
@@ -94,12 +94,12 @@
           <div class="meta-item">
             <i class="fas fa-tag" aria-hidden="true"></i>
             <span class="meta-label">Categoría</span>
-            <span class="meta-value">{{ advertisement.category || 'No especificada' }}</span>
+            <span class="meta-value">{{ advertisment.category || 'No especificada' }}</span>
           </div>
           <div class="meta-item">
             <i class="fas fa-paw" aria-hidden="true"></i>
             <span class="meta-label">Raza</span>
-            <span class="meta-value">{{ advertisement.breed || 'No especificada' }}</span>
+            <span class="meta-value">{{ advertisment.breed || 'No especificada' }}</span>
           </div>
           <div class="meta-item">
             <i class="fas fa-calendar-alt" aria-hidden="true"></i>
@@ -109,14 +109,14 @@
           <div class="meta-item">
             <i class="fas fa-venus-mars" aria-hidden="true"></i>
             <span class="meta-label">Género</span>
-            <span class="meta-value">{{ advertisement.gender }}</span>
+            <span class="meta-value">{{ advertisment.gender }}</span>
           </div>
         </div>
 
         <!-- Description -->
         <div class="ad-description">
           <h3>Descripción</h3>
-          <p>{{ advertisement.description }}</p>
+          <p>{{ advertisment.description }}</p>
         </div>
 
         <!-- Features -->
@@ -137,10 +137,10 @@
             type="button"
             class="action-button favorite"
             (click)="toggleFavorite()"
-            [attr.aria-label]="advertisement.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
+            [attr.aria-label]="advertisment.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
           >
-            <i [class]="advertisement.favorite ? 'fas fa-heart' : 'far fa-heart'"></i>
-            {{ advertisement.favorite ? 'Guardado' : 'Guardar' }}
+            <i [class]="advertisment.favorite ? 'fas fa-heart' : 'far fa-heart'"></i>
+            {{ advertisment.favorite ? 'Guardado' : 'Guardar' }}
           </button>          <button type="button" class="action-button share" aria-label="Compartir anuncio" (click)="shareAd()">
             <i class="fas fa-share-alt"></i> Compartir
           </button>
@@ -155,23 +155,23 @@
         <h3>Información del vendedor</h3>        <div class="seller-profile">
           <img
             [src]="'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'"
-            [alt]="'Avatar de ' + advertisement.sellerName"
-            [title]="'Avatar de ' + advertisement.sellerName"
+            [alt]="'Avatar de ' + advertisment.sellerName"
+            [title]="'Avatar de ' + advertisment.sellerName"
             class="seller-avatar"
           >
           <div class="seller-details">
-            <div class="seller-name">{{ advertisement.sellerName }}</div>
-            <div class="seller-rating" *ngIf="advertisement.sellerRating">
+            <div class="seller-name">{{ advertisment.sellerName }}</div>
+            <div class="seller-rating" *ngIf="advertisment.sellerRating">
               <div class="stars">
                 <i *ngFor="let star of [1,2,3,4,5]"
-                   [class]="star <= (advertisement.sellerRating || 0) ? 'fas fa-star' : 'far fa-star'"
+                   [class]="star <= (advertisment.sellerRating || 0) ? 'fas fa-star' : 'far fa-star'"
                    aria-hidden="true">
                 </i>
               </div>
-              <span>{{ advertisement.sellerRating }}/5</span>
+              <span>{{ advertisment.sellerRating }}/5</span>
             </div>
-            <div class="seller-join-date" *ngIf="advertisement.sellerJoinDate">
-              Miembro desde {{ advertisement.sellerJoinDate | date:'MMM yyyy' }}
+            <div class="seller-join-date" *ngIf="advertisment.sellerJoinDate">
+              Miembro desde {{ advertisment.sellerJoinDate | date:'MMM yyyy' }}
             </div>
           </div>
         </div>
@@ -198,7 +198,7 @@
     </aside>
   </div>
 
-  <!-- Related Advertisements -->
+  <!-- Related Advertisments -->
   <section class="related-ads" *ngIf="relatedAds.length > 0">
     <h3>Anuncios relacionados</h3>
     <div class="related-ads-grid">

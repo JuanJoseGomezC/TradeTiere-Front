@@ -17,13 +17,6 @@ export interface UpdateLocationDto {
 /**
  * Frontend model enriched with extra properties
  */
-export interface Location extends LocationDto {
-  displayName?: string;
-  province?: string;
-  region?: string;
-  coordinates?: { lat: number, lng: number };
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -70,25 +63,10 @@ export class LocationService {
   /**
    * Get all locations with enhanced frontend properties
    */
-  getAllEnhanced(): Observable<Location[]> {
-    return this.apiService.get<LocationDto[]>(this.endpoint).pipe(
-      map(locations => locations.map(location => this.enhanceLocation(location)))
-    );
+  getAllEnhanced(): Observable<LocationDto[]> {
+    return this.apiService.get<LocationDto[]>(this.endpoint);
   }
 
-  /**
-   * Enhances a location DTO with frontend-specific properties
-   */
-  private enhanceLocation(locationDto: LocationDto): Location {
-    // For now, just add some basic properties
-    // In a real app, we might have mappings to actual coordinates or regions
-    return {
-      ...locationDto,
-      displayName: this.getDisplayName(locationDto.name),
-      // Set province same as name for now
-      province: locationDto.name
-    };
-  }
 
   /**
    * Returns a display-friendly name for location

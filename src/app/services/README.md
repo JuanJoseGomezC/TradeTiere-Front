@@ -8,7 +8,7 @@ The following services have been implemented:
 
 1. **ApiService** - Base service for all API calls with authentication handling
 2. **AuthService** - Handles user authentication (login, registration, token management)
-3. **AdvertisementService** - Manages animal advertisements (CRUD operations)
+3. **AdvertismentService** - Manages animal advertisments (CRUD operations)
 4. **SpecieService** - Manages animal species data
 5. **RaceService** - Manages animal races/breeds data
 6. **LocationService** - Manages location data
@@ -44,8 +44,8 @@ Each service follows a consistent pattern:
 
 ## Naming Conventions
 
-- **DTO interfaces** - Named with the `Dto` suffix (e.g., `AdvertisementDto`)
-- **Frontend models** - Named without suffix (e.g., `Advertisement`)
+- **DTO interfaces** - Named with the `Dto` suffix (e.g., `AdvertismentDto`)
+- **Frontend models** - Named without suffix (e.g., `Advertisment`)
 - **Update DTOs** - Named with the `UpdateXxxDto` pattern (e.g., `UpdateUserDto`)
 
 ## User Models

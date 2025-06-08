@@ -83,7 +83,7 @@ export class RaceService {
    * Get races filtered by specie
    */
   getRacesBySpecie(specieId: number): Observable<Race[]> {
-    return this.apiService.get<RaceDto[]>(`${this.endpoint}/bySpecie/${specieId}`).pipe(
+    return this.apiService.get<RaceDto[]>(`${this.endpoint}/specie/${specieId}`).pipe(
       map(races => races.map(race => this.enhanceRace(race)))
     );
   }

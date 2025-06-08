@@ -1,4 +1,4 @@
-/* Advertisement Component Styles */
+/* Advertisment Component Styles */
 
 /* Loading and Error States */
 .loading-container,
@@ -49,7 +49,7 @@
 }
 
 /* Main Container */
-.advertisement-container {
+.advertisment-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;
@@ -184,7 +184,7 @@
   border-color: #007bff;
 }
 
-/* Advertisement Details */
+/* Advertisment Details */
 .ad-details {
   background: white;
   border-radius: 12px;
@@ -581,7 +581,7 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .advertisement-container {
+  .advertisment-container {
     padding: 0.5rem;
   }
 

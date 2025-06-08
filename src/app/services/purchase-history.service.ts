@@ -5,13 +5,13 @@ import { map } from 'rxjs/operators';
 
 export interface PurchaseHistoryIdDto {
   buyerId: number;
-  advertisementId: number;
+  advertismentId: number;
 }
 
 export interface PurchaseHistoryDto {
   buyer: number;
   date: string; // ISO date string format
-  advertisement: number;
+  advertisment: number;
 }
 
 /**
@@ -20,7 +20,7 @@ export interface PurchaseHistoryDto {
 export interface PurchaseHistory extends PurchaseHistoryDto {
   formattedDate?: string;
   buyerInfo?: { name: string; email: string };
-  advertisementInfo?: { title: string; price: number; image?: string };
+  advertismentInfo?: { title: string; price: number; image?: string };
 }
 
 @Injectable({
@@ -39,10 +39,10 @@ export class PurchaseHistoryService {
   }
 
   /**
-   * Get purchase history by ID (complex ID consisting of buyer and advertisement IDs)
+   * Get purchase history by ID (complex ID consisting of buyer and advertisment IDs)
    */
   getById(id: PurchaseHistoryIdDto): Observable<PurchaseHistoryDto> {
-    return this.apiService.get<PurchaseHistoryDto>(`${this.endpoint}/${id.buyerId}/${id.advertisementId}`);
+    return this.apiService.get<PurchaseHistoryDto>(`${this.endpoint}/${id.buyerId}/${id.advertismentId}`);
   }
 
   /**
@@ -57,12 +57,12 @@ export class PurchaseHistoryService {
    */
   deletePurchaseHistory(id: PurchaseHistoryIdDto): Observable<any> {
     // Converting the complex ID object to path parameters
-    return this.apiService.delete(`${this.endpoint}/${id.buyerId}/${id.advertisementId}`);
+    return this.apiService.delete(`${this.endpoint}/${id.buyerId}/${id.advertismentId}`);
   }
 
   /**
    * Get all purchase history with enhanced frontend properties
-   * This will need additional calls to user and advertisement services
+   * This will need additional calls to user and advertisment services
    * to enrich the data
    */
   getAllEnhanced(): Observable<PurchaseHistory[]> {
@@ -88,14 +88,14 @@ export class PurchaseHistoryService {
     return {
       ...dto,
       formattedDate,
-      // In a real app, we'd call user and advertisement services to get this data
+      // In a real app, we'd call user and advertisment services to get this data
       // For now, provide placeholder values
       buyerInfo: {
         name: `Usuario ${dto.buyer}`,
         email: `user${dto.buyer}@example.com`
       },
-      advertisementInfo: {
-        title: `Anuncio ${dto.advertisement}`,
+      advertismentInfo: {
+        title: `Anuncio ${dto.advertisment}`,
         price: 0
       }
     };

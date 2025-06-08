@@ -1,22 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { AdvertisementService, Advertisement, RelatedAd } from '../../services/advertisement.service';
+import { Advertisment, AdvertismentService } from '../../services/advertisment.service';
 
 @Component({
-  selector: 'app-advertisement',
+  selector: 'app-advertisment',
   imports: [CommonModule, RouterModule],
-  templateUrl: './advertisement.component.html',
-  styleUrl: './advertisement.component.css'
+  templateUrl: './advertisment.component.html',
+  styleUrl: './advertisment.component.css'
 })
-export class AdvertisementComponent implements OnInit {
-  advertisement: Advertisement | null = null;
+export class AdvertismentComponent implements OnInit {
+  advertisment: Advertisment | null = null;
   loading = true;
   error = false;
   currentImageIndex = 0;
 
   // Mock data for development
-  mockAd: Advertisement = {
+  mockAd: Advertisment = {
     id: 1,
     title: 'Golden Retriever Cachorro - Pedigree Completo',
     description: 'Hermoso cachorro Golden Retriever de 3 meses con pedigree completo. Vacunado, desparasitado y socializado. Los padres son campeones de exposición. Ideal para familias con niños. Muy juguetón y cariñoso.',
@@ -48,7 +48,7 @@ export class AdvertisementComponent implements OnInit {
     favorite: false
   };
 
-  relatedAds: Advertisement[] = [
+  relatedAds: Advertisment[] = [
     {
       id: 2,
       title: 'Labrador Retriever Adulto',
@@ -56,7 +56,7 @@ export class AdvertisementComponent implements OnInit {
       images: ['https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=300&h=200&fit=crop'],
       province: 'Barcelona',
       age: 24
-    } as Advertisement,
+    } as Advertisment,
     {
       id: 3,
       title: 'Golden Retriever Hembra',
@@ -64,7 +64,7 @@ export class AdvertisementComponent implements OnInit {
       images: ['https://images.unsplash.com/photo-1552053831-71594a27632d?w=300&h=200&fit=crop'],
       province: 'Valencia',
       age: 6
-    } as Advertisement,
+    } as Advertisment,
     {
       id: 4,
       title: 'Cachorro Pastor Alemán',
@@ -72,7 +72,7 @@ export class AdvertisementComponent implements OnInit {
       images: ['https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=300&h=200&fit=crop'],
       province: 'Sevilla',
       age: 4
-    } as Advertisement
+    } as Advertisment
   ];
 
   features = [
@@ -88,26 +88,26 @@ export class AdvertisementComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private advertisementService: AdvertisementService
+    private advertismentService: AdvertismentService
   ) {}
 
   ngOnInit() {
-    this.loadAdvertisement();
+    this.loadAdvertisment();
   }
 
-  loadAdvertisement() {
+  loadAdvertisment() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       // For now, use mock data
       setTimeout(() => {
-        this.advertisement = this.mockAd;
+        this.advertisment = this.mockAd;
         this.loading = false;
       }, 500);
 
       // In real app, you would call:
-      // this.advertisementService.getAdvertisementById(parseInt(id)).subscribe({
+      // this.advertismentService.getAdvertismentById(parseInt(id)).subscribe({
       //   next: (ad) => {
-      //     this.advertisement = ad;
+      //     this.advertisment = ad;
       //     this.loading = false;
       //   },
       //   error: () => {
@@ -119,7 +119,7 @@ export class AdvertisementComponent implements OnInit {
   }
 
   nextImage() {
-    if (this.advertisement?.images && this.currentImageIndex < this.advertisement.images.length - 1) {
+    if (this.advertisment?.images && this.currentImageIndex < this.advertisment.images.length - 1) {
       this.currentImageIndex++;
     }
   }
@@ -135,8 +135,8 @@ export class AdvertisementComponent implements OnInit {
   }
 
   toggleFavorite() {
-    if (this.advertisement) {
-      this.advertisement.favorite = !this.advertisement.favorite;
+    if (this.advertisment) {
+      this.advertisment.favorite = !this.advertisment.favorite;
     }
   }
 
@@ -148,8 +148,8 @@ export class AdvertisementComponent implements OnInit {
   shareAd() {
     if (navigator.share) {
       navigator.share({
-        title: this.advertisement?.title,
-        text: this.advertisement?.description,
+        title: this.advertisment?.title,
+        text: this.advertisment?.description,
         url: window.location.href
       });
     } else {
@@ -164,18 +164,18 @@ export class AdvertisementComponent implements OnInit {
   }
   viewRelatedAd(adId: number | undefined) {
     if (adId !== undefined) {
-      this.router.navigate(['/advertisement', adId]);
+      this.router.navigate(['/advertisment', adId]);
     }
   }
 
   getAge(): string {
-    if (this.advertisement?.age) {
-      return this.advertisement.age === 1 ? '1 mes' : `${this.advertisement.age} meses`;
+    if (this.advertisment?.age) {
+      return this.advertisment.age === 1 ? '1 mes' : `${this.advertisment.age} meses`;
     }
     return 'No especificada';
   }
 
   formatPrice(): string {
-    return this.advertisement?.price?.toLocaleString('es-ES') + ' €' || '0 €';
+    return this.advertisment?.price?.toLocaleString('es-ES') + ' €' || '0 €';
   }
 }

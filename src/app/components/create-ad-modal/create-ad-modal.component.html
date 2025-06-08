@@ -1,153 +1,245 @@
-<div class="modal-overlay">
-  <div class="modal-container" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Publicar un anuncio</h2>
-      <button type="button" class="close-button" (click)="close()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <div class="modal-content">
-      <form [formGroup]="adForm" (ngSubmit)="onSubmit()" class="ad-form">
-        <!-- Título -->
-        <div class="form-group">
-          <label for="title">Título del anuncio *</label>
-          <input
-            type="text"
-            id="title"
-            formControlName="title"
-            placeholder="Ej. Vaca lechera Holstein de 4 años"
-            [ngClass]="{'is-invalid': adForm.get('title')?.invalid && adForm.get('title')?.touched}"
-          >
-          @if (adForm.get('title')?.invalid && adForm.get('title')?.touched) {
-            <div class="error-message">
-              @if (adForm.get('title')?.errors?.['required']) {
-                <span>El título es obligatorio</span>
-              } @else if (adForm.get('title')?.errors?.['minlength']) {
-                <span>El título debe tener al menos 5 caracteres</span>
-              } @else if (adForm.get('title')?.errors?.['maxlength']) {
-                <span>El título no puede exceder los 100 caracteres</span>
-              }
-            </div>
-          }
-        </div>
+  <div class="modal-overlay">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Publicar un anuncio</h2>
+        <button
+          mat-icon-button
+          (click)="close()"
+          class="close-button"
+          aria-label="Cerrar modal"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
 
-        <!-- Categoría -->
-        <div class="form-group">
-          <label for="category">Categoría *</label>          <select
-            id="category"
-            formControlName="category"
-            [ngClass]="{'is-invalid': adForm.get('category')?.invalid && adForm.get('category')?.touched}"
-            class="dark-select"
-          >
-            <option value="" disabled selected>Selecciona una categoría</option>
-            @for (category of categories; track category.id) {
-              <option [value]="category.id">{{ category.name }}</option>
-            }
-          </select>
-          @if (adForm.get('category')?.invalid && adForm.get('category')?.touched) {
-            <div class="error-message">
-              <span>Debes seleccionar una categoría</span>
-            </div>
-          }
-        </div>
+      <div class="modal-content">
+        <form [formGroup]="adForm" (ngSubmit)="onSubmit()" class="ad-form">
+          <div class="form-grid-container">
+            <div class="form-column">
+              <fieldset>
+                <legend>Datos del Anuncio</legend>
+                <mat-form-field appearance="fill" class="full-width">
+                  <mat-label>Título del anuncio *</mat-label>
+                  <input
+                    matInput
+                    formControlName="title"
+                    required
+                    placeholder="Ej. Vaca lechera Holstein de 4 años"
+                    maxlength="100"
+                  />
+                  <mat-hint align="end"
+                    >{{ adForm.get("title")?.value?.length || 0 }} / 100</mat-hint
+                  >
+                  <mat-error
+                    >Este campo es obligatorio y debe tener al menos 5
+                    caracteres.</mat-error
+                  >
+                </mat-form-field>
 
-        <!-- Precio -->
-        <div class="form-group">
-          <label for="price">Precio (€) *</label>
-          <input
-            type="number"
-            id="price"
-            formControlName="price"
-            placeholder="Ej. 1200"
-            [ngClass]="{'is-invalid': adForm.get('price')?.invalid && adForm.get('price')?.touched}"
-          >
-          @if (adForm.get('price')?.invalid && adForm.get('price')?.touched) {
-            <div class="error-message">
-              @if (adForm.get('price')?.errors?.['required']) {
-                <span>El precio es obligatorio</span>
-              } @else if (adForm.get('price')?.errors?.['min']) {
-                <span>El precio no puede ser negativo</span>
-              }
-            </div>
-          }
-        </div>
+                <mat-form-field appearance="fill" class="full-width">
+                  <mat-label>Descripción detallada *</mat-label>
+                  <textarea
+                    matInput
+                    formControlName="description"
+                    required
+                    placeholder="Describe el animal, su edad, estado de salud..."
+                    rows="8"
+                    maxlength="1000"
+                  ></textarea>
+                  <mat-hint align="end"
+                    >{{ adForm.get("description")?.value?.length || 0 }} /
+                    1000</mat-hint
+                  >
+                  <mat-error
+                    >Este campo es obligatorio y debe tener al menos 20
+                    caracteres.</mat-error
+                  >
+                </mat-form-field>
+              </fieldset>
 
-        <!-- Descripción -->
-        <div class="form-group">
-          <label for="description">Descripción *</label>
-          <textarea
-            id="description"
-            formControlName="description"
-            rows="5"
-            placeholder="Describe el animal, su edad, raza, estado de salud, etc."
-            [ngClass]="{'is-invalid': adForm.get('description')?.invalid && adForm.get('description')?.touched}"
-          ></textarea>
-          @if (adForm.get('description')?.invalid && adForm.get('description')?.touched) {
-            <div class="error-message">
-              @if (adForm.get('description')?.errors?.['required']) {
-                <span>La descripción es obligatoria</span>
-              } @else if (adForm.get('description')?.errors?.['minlength']) {
-                <span>La descripción debe tener al menos 20 caracteres</span>
-              } @else if (adForm.get('description')?.errors?.['maxlength']) {
-                <span>La descripción no puede exceder los 1000 caracteres</span>
-              }
-            </div>
-          }
-        </div>
+              <fieldset>
+                <legend>Precio y Ubicación</legend>
+                <mat-form-field appearance="fill" class="full-width">
+                  <mat-label>Precio *</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    formControlName="price"
+                    required
+                    placeholder="1200"
+                  />
+                  <span matTextSuffix>€</span>
+                  <mat-error
+                    >El precio es obligatorio y no puede ser negativo.</mat-error
+                  >
+                </mat-form-field>
+                <mat-form-field appearance="fill" class="full-width">
+                  <mat-label>Ubicación (Provincia) *</mat-label>
+                  <mat-select formControlName="location" required>
+                    <mat-option *ngFor="let loc of locations" [value]="loc.id">
+                      {{ loc.name }}
+                    </mat-option>
+                    <mat-option *ngIf="locations.length === 0" disabled>
+                      No hay ubicaciones disponibles
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="adForm.get('location')?.invalid">
+                    La ubicación es obligatoria.
+                  </mat-error>
+                </mat-form-field>
 
-        <!-- Ubicación -->
-        <div class="form-group">
-          <label for="location">Ubicación *</label>
-          <input
-            type="text"
-            id="location"
-            formControlName="location"
-            placeholder="Ej. Sevilla, Andalucía"
-            [ngClass]="{'is-invalid': adForm.get('location')?.invalid && adForm.get('location')?.touched}"
-          >
-          @if (adForm.get('location')?.invalid && adForm.get('location')?.touched) {
-            <div class="error-message">
-              <span>La ubicación es obligatoria</span>
+              </fieldset>
             </div>
-          }
-        </div>
 
-        <!-- Imágenes -->
-        <div class="form-group">
-          <label for="images">Imágenes</label>
-          <div class="file-upload">
-            <input type="file" id="images" multiple (change)="onFileChange($event)">
-            <label for="images" class="file-upload-label">
-              <i class="fas fa-cloud-upload-alt"></i>
-              <span>Seleccionar imágenes</span>
-            </label>
+            <div class="form-column">
+              <fieldset>
+                <legend>Detalles del Animal</legend>
+                <div class="form-row">
+                  <mat-form-field appearance="fill">
+                    <mat-label>Especie *</mat-label>
+                    <mat-select class="select2" formControlName="specie" required>
+                      @for (s of species; track s.id) {
+                      <mat-option [value]="s.id">{{ s.name }}</mat-option>
+                      }
+                    </mat-select>
+                    <mat-error>Campo requerido.</mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="fill">
+                    <mat-label>Raza *</mat-label>
+                    <mat-select class="select2" formControlName="race" required>
+                      @if (adForm.get('specie')?.value) { @for(r of filteredRaces;
+                      track r.id){
+                      <mat-option [value]="r.id">{{ r.name }}</mat-option>
+                      } @if(filteredRaces.length === 0) {
+                      <mat-option disabled
+                        >No hay razas para esta especie</mat-option
+                      >
+                      } } @else {
+                      <mat-option disabled>Selecciona una especie</mat-option>
+                      }
+                    </mat-select>
+                    <mat-error>Campo requerido.</mat-error>
+                  </mat-form-field>
+                </div>
+
+                <mat-form-field appearance="fill" class="full-width">
+                  <mat-label>Fecha de nacimiento *</mat-label>
+                  <input
+                    matInput
+                    [matDatepicker]="picker"
+                    formControlName="birthdate"
+                    required
+                    [max]="maxDate"
+                    readonly
+                  />
+                  <mat-datepicker-toggle
+                    matIconSuffix
+                    [for]="picker"
+                  ></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                  <mat-error>La fecha es obligatoria.</mat-error>
+                </mat-form-field>
+                @if (animalAge) {
+                <div class="age-display">
+                  <strong>Edad:</strong><span>{{ animalAge }}</span>
+                </div>
+                }
+
+                <div class="form-group-radio">
+                  <label class="mat-label" id="gender-radio-group-label"
+                    >Género *</label
+                  >
+                  <mat-radio-group
+                    formControlName="gender"
+                    color="primary"
+                    required
+                    aria-labelledby="gender-radio-group-label"
+                  >
+                    @for(g of genders; track g){
+                    <mat-radio-button [value]="g">{{ g }}</mat-radio-button>
+                    }
+                  </mat-radio-group>
+                  @if (adForm.get('gender')?.invalid &&
+                  adForm.get('gender')?.touched) {
+                  <mat-error class="radio-error"
+                    >El género es obligatorio.</mat-error
+                  >
+                  }
+                </div>
+              </fieldset>
+            </div>
+
+            <fieldset class="full-width-section">
+              <legend>Imágenes</legend>
+              <div class="image-upload-area">
+                <button
+                  type="button"
+                  mat-stroked-button
+                  color="primary"
+                  (click)="fileInput.click()"
+                >
+                  <mat-icon>add_photo_alternate</mat-icon>
+                  Añadir Imagen
+                </button>
+                <input
+                  hidden
+                  type="file"
+                  #fileInput
+                  accept="image/png, image/jpeg"
+                  (change)="onFileChange($event)"
+                />
+                <p class="help-text">Formatos: JPG, PNG. Máximo 5MB.</p>
+
+                <div class="image-preview-container">
+                  @if (imagePreview) {
+                  <div class="image-preview-item">
+                    <img [src]="imagePreview.url" [alt]="imagePreview.name" />
+                    <button
+                      mat-icon-button
+                      class="remove-image-button"
+                      type="button"
+                      (click)="removeImage()"
+                      aria-label="Eliminar imagen"
+                    >
+                      <mat-icon>cancel</mat-icon>
+                    </button>
+                  </div>
+                  }
+                </div>
+              </div>
+            </fieldset>
           </div>
-          <p class="help-text">Puedes subir hasta 5 imágenes. Formatos permitidos: JPG, PNG</p>
-        </div>
 
-        @if (errorMessage) {
-          <div class="error-container">
-            <i class="fas fa-exclamation-circle"></i>
-            <span>{{ errorMessage }}</span>
-          </div>
-        }
-
-        <!-- Botón de envío -->
-        <div class="form-actions">
-          <button type="button" class="cancel-button" (click)="close()">Cancelar</button>          <button
-            type="submit"
-            class="submit-button"
-            [disabled]="isSubmitting"
-          >
-            @if (isSubmitting) {
-              <span class="spinner"></span>
-              <span>Publicando...</span>
-            } @else {
-              <span>Publicar anuncio</span>
+          <div class="footer-actions">
+            @if (errorMessage) {
+            <div class="error-container">
+              <mat-icon>warning</mat-icon>
+              <span>{{ errorMessage }}</span>
+            </div>
             }
-          </button>
-        </div>
-      </form>
+
+            <div class="form-buttons">
+              <button type="button" mat-button (click)="close()">Cancelar</button>
+              <button
+                type="submit"
+                mat-raised-button
+                color="primary"
+                [disabled]="isSubmitting || adForm.invalid"
+              >
+                @if (isSubmitting) {
+                <mat-spinner
+                  diameter="20"
+                  class="spinner-in-button"
+                ></mat-spinner>
+                <span>Publicando...</span>
+                } @else {
+                <span>Publicar anuncio</span>
+                }
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
-</div>

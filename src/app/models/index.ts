@@ -1,19 +1,19 @@
-export * from './advertisement.model';
+export * from './advertisment.model';
 
 // API DTOs based on Swagger definition
 
 export interface UserDto {
   id?: number;
-  birthday?: string; 
+  birthday?: string;
   mail: string;
   name: string;
   lastname: string;
   createAt?: string;
-  password?: string; 
+  password?: string;
 }
 
 export interface UpdateUserDto {
-  birthday?: string; 
+  birthday?: string;
   name?: string;
   lastname?: string;
   password?: string;
@@ -63,7 +63,7 @@ export interface UpdateLanguageDto {
   language?: string;
 }
 
-export interface AdvertisementDto {
+export interface AdvertismentDto {
   id?: number;
   title: string;
   description: string;
@@ -78,7 +78,7 @@ export interface AdvertisementDto {
   create_at: string;
 }
 
-export interface UpdateAdvertisementDto {
+export interface UpdateAdvertismentDto {
   title?: string;
   description?: string;
   location?: number;
@@ -109,11 +109,11 @@ export interface TokenDto {
 
 export interface PurchaseHistoryIdDto {
   buyerId: number;
-  advertisementId: number;
+  advertismentId: number;
 }
 
 export interface PurchaseHistoryDto {
   buyer: number;
   date: string;
-  advertisement: number;
+  advertisment: number;
 }

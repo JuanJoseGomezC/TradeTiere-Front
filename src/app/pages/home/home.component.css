@@ -59,7 +59,7 @@
 }
 
 .demo-section h2,
-.advertisements-section h2,
+.advertisments-section h2,
 .filters-section h2 {
   text-align: center;
   font-size: 2rem;
@@ -461,12 +461,12 @@
   background-color: var(--tradetiere-dark-brown);
 }
 
-/* Advertisements Section */
-.advertisements-section {
+/* Advertisments Section */
+.advertisments-section {
   margin-bottom: 4rem;
 }
 
-.advertisements-section h2 {
+.advertisments-section h2 {
   margin-bottom: 2rem;
 }
 

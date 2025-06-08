@@ -1,8 +1,10 @@
+// app.component.ts
 import { Component, OnInit, HostListener, OnDestroy } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CreateAdModalComponent } from './components/create-ad-modal/create-ad-modal.component';
 import { AuthService } from './services/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -18,9 +20,24 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly ACTIVITY_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutos
   private activityCheckTimer: any;
 
-  constructor(private authService: AuthService) {}
+  // Nuevas propiedades para manejar el estado de autenticación
+  isAuthenticated = false;
+  private authSubscription!: Subscription;
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {
+    // Inicializar el estado de autenticación
+    this.isAuthenticated = authService.isLoggedIn;
+  }
 
   ngOnInit() {
+    this.authSubscription = this.authService.isAuthenticated$.subscribe(isAuth => {
+      this.isAuthenticated = isAuth;
+      console.log('Estado de autenticación:', isAuth);
+    });
+
     // Iniciar verificación periódica de actividad del usuario
     this.startActivityCheck();
   }
@@ -60,11 +77,22 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Cierra la sesión del usuario
+   */
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  /**
    * Limpia los recursos cuando el componente se destruye
    */
   ngOnDestroy() {
     if (this.activityCheckTimer) {
       clearInterval(this.activityCheckTimer);
+    }
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
     }
   }
 }

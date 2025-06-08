@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
 
 // Import all our services
-import { AdvertisementService } from './advertisement.service';
 import { SpecieService } from './specie.service';
 import { RaceService } from './race.service';
 import { LocationService } from './location.service';
 import { LanguageService } from './language.service';
 import { PurchaseHistoryService } from './purchase-history.service';
 import { UserService } from './user.service';
+import { AdvertismentService } from './advertisment.service';
 
 /**
  * Example service that demonstrates how all the services can be used together
@@ -20,7 +20,7 @@ import { UserService } from './user.service';
 export class ExampleIntegrationService {
 
   constructor(
-    private advertisementService: AdvertisementService,
+    private advertismentService: AdvertismentService,
     private specieService: SpecieService,
     private raceService: RaceService,
     private locationService: LocationService,
@@ -30,15 +30,15 @@ export class ExampleIntegrationService {
   ) { }
 
   /**
-   * Get advertisement details with all related data
+   * Get advertisment details with all related data
    * Demonstrates how to combine multiple service calls
    */
-  getFullAdvertisementDetails(advertisementId: number): Observable<any> {
-    return this.advertisementService.getAdvertisementById(advertisementId).pipe(
+  getFullAdvertismentDetails(advertismentId: number): Observable<any> {
+    return this.advertismentService.getAdvertismentById(advertismentId).pipe(
       switchMap(ad => {
         if (!ad) return of(null);
 
-        // Fetch all related data for this advertisement
+        // Fetch all related data for this advertisment
         return forkJoin({
           ad: of(ad),
           specie: this.specieService.getById(ad.specie),
@@ -70,13 +70,13 @@ export class ExampleIntegrationService {
         // Fetch all related data for this user
         return forkJoin({
           user: of(user),
-          advertisements: this.userService.getUserAdvertisements(userId),
+          advertisments: this.userService.getUserAdvertisments(userId),
           favorites: this.userService.getUserFavorites(userId),
           purchases: this.purchaseHistoryService.findAllByMail(user.mail)
         }).pipe(
           map(result => ({
             ...result.user,
-            advertisements: result.advertisements,
+            advertisments: result.advertisments,
             favorites: result.favorites,
             purchases: result.purchases
           }))
@@ -91,7 +91,7 @@ export class ExampleIntegrationService {
    */
   getHomePageData(): Observable<any> {
     return forkJoin({
-      advertisements: this.advertisementService.getAdvertisements(),
+      advertisments: this.advertismentService.getAdvertisments(),
       species: this.specieService.getAllEnhanced(),
       locations: this.locationService.getAllEnhanced(),
       languages: this.languageService.getAll()
@@ -99,10 +99,10 @@ export class ExampleIntegrationService {
   }
 
   /**
-   * Search for advertisements with filters
+   * Search for advertisments with filters
    * Demonstrates how to combine multiple service calls
    */
-  searchAdvertisements(filters: {
+  searchAdvertisments(filters: {
     specieId?: number;
     raceId?: number;
     locationId?: number;
@@ -110,7 +110,7 @@ export class ExampleIntegrationService {
     maxPrice?: number;
     searchTerm?: string;
   }): Observable<any> {
-    return this.advertisementService.getAdvertisements().pipe(
+    return this.advertismentService.getAdvertisments().pipe(
       map(ads => {
         // Apply filters
         return ads.filter(ad => {

@@ -7,8 +7,8 @@
 Se han eliminado los siguientes archivos de respaldo y temporales:
 
 1. `c:/Users/Juan Jose/Desktop/Proyecto DAW/front-TradeTiere/src/app/services/auth.service.ts.new`
-2. `c:/Users/Juan Jose/Desktop/Proyecto DAW/front-TradeTiere/src/app/services/advertisement.service.ts.new`
-3. `c:/Users/Juan Jose/Desktop/Proyecto DAW/front-TradeTiere/src/app/services/advertisement.service.ts.fix`
+2. `c:/Users/Juan Jose/Desktop/Proyecto DAW/front-TradeTiere/src/app/services/advertisment.service.ts.new`
+3. `c:/Users/Juan Jose/Desktop/Proyecto DAW/front-TradeTiere/src/app/services/advertisment.service.ts.fix`
 4. `c:/Users/Juan Jose/Desktop/Proyecto DAW/front-TradeTiere/src/app/pages/home/home.component.ts.new`
 5. `c:/Users/Juan Jose/Desktop/Proyecto DAW/front-TradeTiere/src/app/pages/home/home.component.ts.bak`
 6. `c:/Users/Juan Jose/Desktop/Proyecto DAW/front-TradeTiere/src/app/pages/profile/profile.component.fixed.ts`
@@ -19,7 +19,7 @@ Se han eliminado los siguientes archivos de respaldo y temporales:
 
 - **ApiService**: Servicio base para todas las llamadas API con manejo de autenticación
 - **AuthService**: Maneja la autenticación de usuarios (login, registro, gestión de tokens)
-- **AdvertisementService**: Gestiona los anuncios de animales (operaciones CRUD)
+- **AdvertismentService**: Gestiona los anuncios de animales (operaciones CRUD)
 - **SpecieService**: Gestiona los datos de especies animales
 - **RaceService**: Gestiona los datos de razas/breeds animales
 - **LocationService**: Gestiona los datos de ubicación
@@ -40,9 +40,9 @@ Se han eliminado los siguientes archivos de respaldo y temporales:
 
 Se recomienda revisar los siguientes archivos para confirmar que funcionan correctamente:
 
-- `src/app/pages/advertisement/advertisement.component.ts`
+- `src/app/pages/advertisment/advertisment.component.ts`
 - `src/app/pages/profile/profile.component.ts`
-- `src/app/services/advertisement.service.ts`
+- `src/app/services/advertisment.service.ts`
 - `src/app/services/user.service.ts`
 
 ### Pendientes

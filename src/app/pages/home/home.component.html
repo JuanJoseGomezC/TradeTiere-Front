@@ -70,7 +70,7 @@
           <span class="min-value">0€</span>
           <span class="max-value">{{ maxSliderValue }}€</span>
         </div>
-        
+
         <div class="filter-buttons">
           <button type="button" class="apply-filters" (click)="applyFilters()">
             <i class="fas fa-filter"></i> Aplicar filtros
@@ -81,8 +81,8 @@
         </div>
       </div>
     </div>
-  </section><!-- Advertisements Section -->
-  <section class="advertisements-section">
+  </section><!-- Advertisments Section -->
+  <section class="advertisments-section">
     <h2>Anuncios disponibles</h2>
 
     <!-- Active Filters Summary -->
@@ -149,7 +149,7 @@
             </div>
             <div class="ad-details">
               <h3 class="ad-title">
-                <a [routerLink]="['/advertisement', ad.id]">{{ ad.title }}</a>
+                <a [routerLink]="['/advertisment', ad.id]">{{ ad.title }}</a>
               </h3>
               <p class="ad-price">{{ ad.price | currency:'EUR':'symbol':'1.0-0' }}</p>
               <p class="ad-location">
@@ -170,7 +170,7 @@
                 <i [class]="ad.favorite ? 'fas fa-heart' : 'far fa-heart'"></i>
                 <span class="sr-only">{{ ad.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos' }}</span>
               </button>
-              <a [routerLink]="['/advertisement', ad.id]" class="view-button">
+              <a [routerLink]="['/advertisment', ad.id]" class="view-button">
                 Ver anuncio <i class="fas fa-arrow-right"></i>
               </a>
             </div>
