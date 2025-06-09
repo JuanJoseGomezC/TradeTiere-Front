@@ -137,6 +137,32 @@ export class AdvertismentComponent implements OnInit {
   toggleFavorite() {
     if (this.advertisment) {
       this.advertisment.favorite = !this.advertisment.favorite;
+      // Guardar/quitar en favoritos de localStorage
+      const key = 'favoriteAds';
+      let favorites: any[] = [];
+      try {
+        const stored = localStorage.getItem(key);
+        if (stored) favorites = JSON.parse(stored);
+      } catch {}
+      if (this.advertisment.favorite) {
+        // Añadir si no existe
+        if (!favorites.some(ad => ad.id === this.advertisment!.id)) {
+          // Guardar solo los campos necesarios para mostrar en perfil
+          favorites.push({
+            id: this.advertisment.id,
+            title: this.advertisment.title,
+            price: this.advertisment.price,
+            location: this.advertisment.province || '',
+            publishedDate: this.advertisment.create_at,
+            thumbnailUrl: this.advertisment.images?.[0] || '',
+            sellerName: this.advertisment.sellerName || ''
+          });
+        }
+      } else {
+        // Quitar de favoritos
+        favorites = favorites.filter(ad => ad.id !== this.advertisment!.id);
+      }
+      localStorage.setItem(key, JSON.stringify(favorites));
     }
   }
 

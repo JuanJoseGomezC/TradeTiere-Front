@@ -147,47 +147,14 @@ export class ProfileComponent implements OnInit {
   }
 
   loadFavoriteAds(): void {
-    if (this.profile && this.profile.id) {
-      // TODO: Replace with actual API call when favorites endpoint is available
-      // this.advertismentService.getUserFavorites(this.profile.id).subscribe(
-      //   (favoriteAds) => {
-      //     this.favoriteAds = favoriteAds.map(ad => ({
-      //       id: ad.id,
-      //       title: ad.title,
-      //       price: ad.price,
-      //       location: this.getLocationName(ad.location),
-      //       publishedDate: ad.create_at,
-      //       thumbnailUrl: ad.images?.[0] || 'assets/images/default-ad.png',
-      //       sellerName: ad.sellerName || 'Vendedor'
-      //     }));
-      //   },
-      //   (error) => {
-      //     console.error('Error loading favorite ads:', error);
-      //   }
-      // );
-
-      // Mock data for now
-      this.favoriteAds = [
-        {
-          id: 101,
-          title: 'Toro Limousin para semental',
-          price: 1800,
-          location: 'Granada, Andalucía',
-          publishedDate: new Date('2025-05-15'),
-          thumbnailUrl: 'https://images.unsplash.com/photo-1584935385343-927439571c4f',
-          sellerName: 'Ganadería López'
-        },
-        {
-          id: 102,
-          title: 'Cerdo ibérico puro de bellota',
-          price: 350,
-          location: 'Huelva, Andalucía',
-          publishedDate: new Date('2025-05-10'),
-          thumbnailUrl: 'https://images.unsplash.com/photo-1516467913134-01c66300b80f',
-          sellerName: 'Dehesa Extremeña'
-        }
-      ];
-    }
+    // Cargar favoritos desde localStorage
+    const key = 'favoriteAds';
+    let favorites: any[] = [];
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored) favorites = JSON.parse(stored);
+    } catch {}
+    this.favoriteAds = favorites;
   }
 
   changeTab(tab: 'info' | 'ads' | 'favorites' | 'messages' | 'settings'): void {
@@ -229,15 +196,16 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  removeFromFavorites(adId: number): void {
-    this.favoriteAds = this.favoriteAds.filter(ad => ad.id !== adId);
-    // TODO: Implement when API is ready
-    // if (this.profile && this.profile.id) {
-    //   this.advertismentService.removeFromFavorites(this.profile.id, adId).subscribe(
-    //     () => console.log('Ad removed from favorites'),
-    //     (error) => console.error('Error removing from favorites:', error)
-    //   );
-    // }
+  removeFromFavorites(adId: number) {
+    const key = 'favoriteAds';
+    let favorites: any[] = [];
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored) favorites = JSON.parse(stored);
+    } catch {}
+    favorites = favorites.filter(ad => ad.id !== adId);
+    localStorage.setItem(key, JSON.stringify(favorites));
+    this.favoriteAds = favorites;
   }
   openCreateAdModal() {
     this.showCreateAdModal = true;
