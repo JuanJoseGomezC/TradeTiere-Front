@@ -4,11 +4,28 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Advertisment, AdvertismentService } from '../../services/advertisment.service';
+import { LocationService } from '../../services/location.service';
+import { LanguageService } from '../../services/language.service';
+import { SpecieService } from '../../services/specie.service';
+import { RaceService } from '../../services/race.service';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatNativeDateModule } from '@angular/material/core';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatNativeDateModule
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
@@ -19,8 +36,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   error: string | null = null;
 
   // Filter variables
-  selectedCategory: string = '';
-  selectedBreed: string = '';
+  especieSeleccionada: string = '';
+  razaSeleccionada: string = '';
   minPrice: number = 0;
   maxPrice: number = 10000;
   searchTerm: string = '';
@@ -30,79 +47,56 @@ export class HomeComponent implements OnInit, AfterViewInit {
   isMinPriceActive: boolean = false;
   isMaxPriceActive: boolean = false;
 
-  // Available categories (species)
-  categories = [
-    { id: 'vacuno', name: 'Vacuno' },
-    { id: 'ovino', name: 'Ovino' },
-    { id: 'caprino', name: 'Caprino' },
-    { id: 'porcino', name: 'Porcino' },
-    { id: 'avicola', name: 'Avícola' },
-    { id: 'equino', name: 'Equino' },
-    { id: 'otros', name: 'Otros animales' }
-  ];
+  // Available species (especies)
+  especies: any[] = [];
+  razas: any[] = [];
+  razasFiltradas: any[] = [];
 
-  // Available breeds (razas) based on species
-  breeds: { id: string, name: string, category: string }[] = [
-    // Vacuno
-    { id: 'holstein', name: 'Holstein', category: 'vacuno' },
-    { id: 'angus', name: 'Aberdeen Angus', category: 'vacuno' },
-    { id: 'hereford', name: 'Hereford', category: 'vacuno' },
-    { id: 'charolais', name: 'Charolais', category: 'vacuno' },
-    { id: 'limousin', name: 'Limousin', category: 'vacuno' },
-
-    // Ovino
-    { id: 'merino', name: 'Merino', category: 'ovino' },
-    { id: 'suffolk', name: 'Suffolk', category: 'ovino' },
-    { id: 'dorper', name: 'Dorper', category: 'ovino' },
-    { id: 'lacaune', name: 'Lacaune', category: 'ovino' },
-
-    // Caprino
-    { id: 'murcianogranadina', name: 'Murciano-Granadina', category: 'caprino' },
-    { id: 'malagueña', name: 'Malagueña', category: 'caprino' },
-    { id: 'saanen', name: 'Saanen', category: 'caprino' },
-
-    // Porcino
-    { id: 'iberico', name: 'Ibérico', category: 'porcino' },
-    { id: 'duroc', name: 'Duroc', category: 'porcino' },
-    { id: 'landrace', name: 'Landrace', category: 'porcino' },
-    { id: 'pietrain', name: 'Pietrain', category: 'porcino' },
-
-    // Avícola
-    { id: 'leghorn', name: 'Leghorn', category: 'avicola' },
-    { id: 'rhodeisland', name: 'Rhode Island', category: 'avicola' },
-    { id: 'orpington', name: 'Orpington', category: 'avicola' },
-    { id: 'brahma', name: 'Brahma', category: 'avicola' },
-
-    // Equino
-    { id: 'purarazaespanola', name: 'Pura Raza Española', category: 'equino' },
-    { id: 'arabe', name: 'Árabe', category: 'equino' },
-    { id: 'andaluz', name: 'Andaluz', category: 'equino' },
-    { id: 'cuartodmilla', name: 'Cuarto de Milla', category: 'equino' }
-  ];
-
-  // Filtered breeds based on selected category
-  filteredBreeds: { id: string, name: string, category: string }[] = [];
+  // Filtros avanzados
+  locations: any[] = [];
+  languages: any[] = [];
+  selectedLocation: string = '';
+  selectedLanguage: string = '';
+  selectedGender: string = '';
+  minAge: number | null = null;
+  maxAge: number | null = null;
+  minDate: string = '';
+  maxDate: string = '';
 
   constructor(
     private advertismentService: AdvertismentService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private locationService: LocationService,
+    private languageService: LanguageService,
+    private specieService: SpecieService,
+    private raceService: RaceService
   ) {}
 
   ngOnInit(): void {
+    // Cargar especies desde la base de datos
+    this.specieService.getAll().subscribe(species => {
+      this.especies = species;
+    });
+    // Cargar localizaciones e idiomas desde la base de datos
+    this.locationService.getAll().subscribe(locs => this.locations = locs);
+    this.languageService.getAll().subscribe(langs => this.languages = langs);
+    // Cargar todas las razas al inicio (opcional, para filtrar después)
+    this.updateBreedsFromDB();
+
     // Check if there are filters in the query params
     this.route.queryParams.subscribe(params => {
-      if (params['category']) {
-        this.selectedCategory = params['category'];
-        // Update filtered breeds based on category
+      if (params['especie']) {
+        this.especieSeleccionada = params['especie'];
+        // Update filtered breeds based on especie
         this.updateFilteredBreeds();
 
-        // If there's also a breed parameter and we have filtered breeds
-        if (params['breed'] && this.filteredBreeds.length > 0) {
-          // Verify that the selected breed belongs to the selected category
-          const breedExists = this.filteredBreeds.some(breed => breed.id === params['breed']);
+        // If there's also a raza parameter and we have filtered breeds
+        if (params['raza'] && this.razasFiltradas.length > 0) {
+          // Verify that the selected breed belongs to the selected especie
+          const breedExists = this.razasFiltradas.some(breed => breed.id === params['raza']);
           if (breedExists) {
-            this.selectedBreed = params['breed'];
+            this.razaSeleccionada = params['raza'];
           }
         }
       }
@@ -129,22 +123,43 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }, 100);
   }
 
-  // Update filtered breeds based on selected category
-  updateFilteredBreeds(): void {
-    if (this.selectedCategory) {
-      this.filteredBreeds = this.breeds.filter(breed => breed.category === this.selectedCategory);
+  updateBreedsFromDB(): void {
+    if (this.especieSeleccionada) {
+      const specieId = Number(this.especieSeleccionada);
+      if (!isNaN(specieId)) {
+        this.raceService.getRacesBySpecie(specieId).subscribe(breeds => {
+          this.razas = breeds;
+          this.updateFilteredBreeds();
+        });
+      } else {
+        this.razas = [];
+        this.razasFiltradas = [];
+      }
     } else {
-      this.filteredBreeds = [];
+      this.raceService.getAllEnhanced().subscribe(breeds => {
+        this.razas = breeds;
+        this.updateFilteredBreeds();
+      });
     }
   }
 
-  // Handle category change
-  onCategoryChange(): void {
-    // Reset breed selection when category changes
-    this.selectedBreed = '';
-    // Update filtered breeds
-    this.updateFilteredBreeds();
-    // Apply filters
+  // Update filtered breeds based on selected especie
+  updateFilteredBreeds(): void {
+    if (this.especieSeleccionada) {
+      // Asegurarse de comparar correctamente el tipo de dato (string vs number)
+      this.razasFiltradas = this.razas.filter(breed => {
+        // breed.specie puede ser number o string
+        return String(breed.specie) === String(this.especieSeleccionada) || String(breed.specieId) === String(this.especieSeleccionada);
+      });
+    } else {
+      this.razasFiltradas = this.razas;
+    }
+  }
+
+  // Handle especie change
+  onEspecieChange(): void {
+    this.razaSeleccionada = '';
+    this.updateBreedsFromDB();
     this.applyFilters();
   }
 
@@ -159,7 +174,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
     const prices = this.advertisments.map(ad => ad.price);
     const maxPrice = Math.max(...prices);
     if (maxPrice > 0) {
-      // Redondeamos hacia arriba al siguiente múltiplo de 1000 para tener un valor redondo
       this.maxSliderValue = Math.ceil(maxPrice / 1000) * 1000;
     }
 
@@ -196,8 +210,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading advertisments', err);
-        this.error = 'No se pudieron cargar los anuncios. Por favor, inténtelo de nuevo más tarde.';
+        this.showError('No se pudieron cargar los anuncios. Por favor, inténtelo de nuevo más tarde.');
         this.loading = false;
       }
     });
@@ -205,95 +218,151 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   applyFilters(): void {
-    let filtered = [...this.advertisments];
+    try {
+      let filtered = [...this.advertisments];
 
-    // Filter by category (species)
-    if (this.selectedCategory) {
-      filtered = filtered.filter(ad => ad.category === this.selectedCategory);
-    }
+      // Filtrar solo anuncios activos
+      filtered = filtered.filter(ad => ad.state === true);
 
-    // Filter by breed
-    if (this.selectedBreed) {
-      const selectedBreedName = this.breeds.find(b => b.id === this.selectedBreed)?.name;
-      if (selectedBreedName) {
-        filtered = filtered.filter(ad => ad.breed && ad.breed.toLowerCase() === selectedBreedName.toLowerCase());
+      // Filter by especie
+      if (this.especieSeleccionada) {
+        // API model uses 'specie' (number), frontend model may use 'category' (string)
+        filtered = filtered.filter(ad =>
+          (ad.specie && ad.specie.toString() === this.especieSeleccionada) ||
+          (ad.category && ad.category === this.getEspecieName(this.especieSeleccionada))
+        );
       }
-    }
 
-    // Filter by price range
-    console.log(`Applying filters - Min price: ${this.minPrice}, isActive: ${this.isMinPriceActive}, Max price: ${this.maxPrice}, isActive: ${this.isMaxPriceActive}`);
+      // Filter by raza
+      if (this.razaSeleccionada) {
+        const selectedBreedName = this.razas.find(b => b.id === this.razaSeleccionada)?.name;
+        if (selectedBreedName) {
+          filtered = filtered.filter(ad =>
+            (ad.race && ad.race.toString() === this.razaSeleccionada) ||
+            (ad.breed && ad.breed.toLowerCase() === selectedBreedName.toLowerCase())
+          );
+        }
+      }
 
-    // Aplicar filtro de precio mínimo
-    if (this.minPrice > 0) {
-      filtered = filtered.filter(ad => ad.price >= this.minPrice);
-      this.isMinPriceActive = true;
-      console.log(`Filtered by min price: ${this.minPrice}. Remaining ads: ${filtered.length}`);
-    } else {
-      this.isMinPriceActive = false;
-    }
+      // Filter by price range
+      console.log(`Applying filters - Min price: ${this.minPrice}, isActive: ${this.isMinPriceActive}, Max price: ${this.maxPrice}, isActive: ${this.isMaxPriceActive}`);
 
-    // Aplicar filtro de precio máximo
-    if (this.maxPrice < this.maxSliderValue) {
-      filtered = filtered.filter(ad => ad.price <= this.maxPrice);
-      this.isMaxPriceActive = true;
-      console.log(`Filtered by max price: ${this.maxPrice}. Remaining ads: ${filtered.length}`);
-    } else {
-      this.isMaxPriceActive = false;
-    }
+      // Aplicar filtro de precio mínimo
+      if (this.minPrice > 0) {
+        filtered = filtered.filter(ad => ad.price >= this.minPrice);
+        this.isMinPriceActive = true;
+        console.log(`Filtered by min price: ${this.minPrice}. Remaining ads: ${filtered.length}`);
+      } else {
+        this.isMinPriceActive = false;
+      }
 
-    console.log(`After filtering - isMinPriceActive: ${this.isMinPriceActive}, isMaxPriceActive: ${this.isMaxPriceActive}`);
+      // Aplicar filtro de precio máximo
+      if (this.maxPrice < this.maxSliderValue) {
+        filtered = filtered.filter(ad => ad.price <= this.maxPrice);
+        this.isMaxPriceActive = true;
+        console.log(`Filtered by max price: ${this.maxPrice}. Remaining ads: ${filtered.length}`);
+      } else {
+        this.isMaxPriceActive = false;
+      }
 
-    // Filter by search term
-    if (this.searchTerm.trim() !== '') {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(ad =>
-        ad.title.toLowerCase().includes(term) ||
-        ad.description.toLowerCase().includes(term) ||
-        (ad.breed && ad.breed.toLowerCase().includes(term)) ||
-        // Find category name that matches search term
-        this.categories.find(cat => cat.id === ad.category)?.name.toLowerCase().includes(term)
-      );
-    }
+      // Filter by localización
+      if (this.selectedLocation) {
+        filtered = filtered.filter(ad => ad.province === this.selectedLocation);
+      }
+      // Filter by idioma
+      if (this.selectedLanguage) {
+        filtered = filtered.filter(ad => String(ad.language) === String(this.selectedLanguage));
+      }
+      // Filter by género
+      if (this.selectedGender) {
+        filtered = filtered.filter(ad => ad.gender === this.selectedGender);
+      }
+      // Filter by edad
+      if (this.minAge !== null) {
+        filtered = filtered.filter(ad => ad.age !== undefined && ad.age >= this.minAge!);
+      }
+      if (this.maxAge !== null) {
+        filtered = filtered.filter(ad => ad.age !== undefined && ad.age <= this.maxAge!);
+      }
+      // Filter by fecha de publicación
+      if (this.minDate) {
+        filtered = filtered.filter(ad => ad.create_at && new Date(ad.create_at) >= new Date(this.minDate));
+      }
+      if (this.maxDate) {
+        filtered = filtered.filter(ad => ad.create_at && new Date(ad.create_at) <= new Date(this.maxDate));
+      }
 
-    this.filteredAds = filtered;
+      // Filter by search term
+      if (this.searchTerm.trim() !== '') {
+        const term = this.searchTerm.toLowerCase();
+        filtered = filtered.filter(ad =>
+          ad.title.toLowerCase().includes(term) ||
+          ad.description.toLowerCase().includes(term) ||
+          (ad.breed && ad.breed.toLowerCase().includes(term)) ||
+          (this.especies.find(esp => esp.id?.toString() === ad.specie?.toString())?.name.toLowerCase().includes(term)) ||
+          (ad.category && ad.category.toLowerCase().includes(term))
+        );
+      }
 
-    // Update URL with all filters
-    const queryParams: any = {};
-    if (this.selectedCategory) {
-      queryParams.category = this.selectedCategory;
-    }
-    if (this.selectedBreed) {
-      queryParams.breed = this.selectedBreed;
-    }
-    if (this.isMinPriceActive && this.minPrice > 0) {
-      queryParams.minPrice = this.minPrice;
-    }
-    if (this.isMaxPriceActive && this.maxPrice < this.maxSliderValue) {
-      queryParams.maxPrice = this.maxPrice;
-    }
-    if (this.searchTerm) {
-      queryParams.search = this.searchTerm;
-    }
+      this.filteredAds = filtered;
 
-    // Only update params if we have filters
-    if (Object.keys(queryParams).length > 0) {
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: queryParams,
-        queryParamsHandling: 'merge'
-      });
+      // Update URL with all filters
+      const queryParams: any = {};
+      if (this.especieSeleccionada) {
+        queryParams.especie = this.especieSeleccionada;
+      }
+      if (this.razaSeleccionada) {
+        queryParams.raza = this.razaSeleccionada;
+      }
+      if (this.isMinPriceActive && this.minPrice > 0) {
+        queryParams.minPrice = this.minPrice;
+      }
+      if (this.isMaxPriceActive && this.maxPrice < this.maxSliderValue) {
+        queryParams.maxPrice = this.maxPrice;
+      }
+      if (this.searchTerm) {
+        queryParams.search = this.searchTerm;
+      }
+
+      // Only update params if we have filters
+      if (Object.keys(queryParams).length > 0) {
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: queryParams,
+          queryParamsHandling: 'merge'
+        });
+      }
+    } catch (e) {
+      this.showError('Ocurrió un error al aplicar los filtros.');
     }
   }
 
+  showError(message: string): void {
+    this.error = message;
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: message,
+      confirmButtonColor: '#d33',
+    });
+  }
+
   resetFilters(): void {
-    this.selectedCategory = '';
-    this.selectedBreed = '';
+    this.especieSeleccionada = '';
+    this.razaSeleccionada = '';
     this.minPrice = 0;
     this.maxPrice = this.maxSliderValue;
     this.isMinPriceActive = false;
     this.isMaxPriceActive = false;
     this.searchTerm = '';
-    this.filteredBreeds = []; // Clear filtered breeds
+    this.razasFiltradas = []; // Clear filtered breeds
+    this.selectedLocation = '';
+    this.selectedLanguage = '';
+    this.selectedGender = '';
+    this.minAge = null;
+    this.maxAge = null;
+    this.minDate = '';
+    this.maxDate = '';
 
     // Update slider track UI
     setTimeout(() => {
@@ -513,23 +582,23 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   // Helper methods for the template
-  getCategoryName(categoryId: string): string {
-    return this.categories.find(c => c.id === categoryId)?.name || '';
+  getEspecieName(especieId: string): string {
+    return this.especies.find(e => e.id === especieId)?.name || '';
   }
 
-  getBreedName(breedId: string): string {
-    return this.breeds.find(b => b.id === breedId)?.name || '';
+  getRazaName(razaId: string): string {
+    return this.razas.find(r => r.id === razaId)?.name || '';
   }
 
-  removeCategory(): void {
-    this.selectedCategory = '';
-    this.selectedBreed = '';
-    this.filteredBreeds = [];
+  removeEspecie(): void {
+    this.especieSeleccionada = '';
+    this.razaSeleccionada = '';
+    this.razasFiltradas = [];
     this.applyFilters();
   }
 
-  removeBreed(): void {
-    this.selectedBreed = '';
+  removeRaza(): void {
+    this.razaSeleccionada = '';
     this.applyFilters();
   }
 

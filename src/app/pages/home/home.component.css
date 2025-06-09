@@ -15,12 +15,9 @@
 
 .home-container {
   min-height: 100vh;
-  padding: 2rem 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 2rem 0 0 0;
 }
 
-/* Hero Section */
 .hero-section {
   text-align: center;
   padding: 4rem 0;
@@ -837,4 +834,86 @@
 .price-slider::-webkit-slider-thumb {
   transform: scale(1.1);
   transition: transform 0.2s;
+}
+
+.home-flex-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.filters-section {
+  flex: 0 0 320px;
+  min-width: 260px;
+  max-width: 350px;
+}
+
+.advertisments-section {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .home-flex-layout {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .filters-section {
+    max-width: 100%;
+    width: 100%;
+    min-width: 0;
+  }
+  .advertisments-section {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-flex-layout {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .filters-section {
+    max-width: 100%;
+    width: 100%;
+    min-width: 0;
+  }
+  .advertisments-section {
+    width: 100%;
+  }
+}
+
+.filter-age-range, .filter-date-range {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.filter-age-range input,
+.filter-date-range input {
+  width: 60px;
+}
+
+.date-filter-field {
+  width: 110px;
+  min-width: 90px;
+  margin-right: 0.5rem;
+}
+
+.ad-age {
+  display: inline-block;
+  background: var(--tradetiere-terracotta);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 16px;
+  padding: 0.2rem 0.8rem;
+  margin: 0.4rem 0 0.4rem 0.2rem;
+  box-shadow: 0 2px 6px rgba(70, 55, 48, 0.08);
+  letter-spacing: 0.5px;
+}
+
+.ad-age-label {
+  color: var(--text-secondary);
+  font-size: 0.95em;
+  margin-right: 0.3em;
 }
