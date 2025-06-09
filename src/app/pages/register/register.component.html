@@ -84,17 +84,12 @@
       </div>      <!-- Birthdate Field -->
       <div class="form-group">
         <label for="birthdate">Fecha de Nacimiento</label>
-        <div class="input-container">
-          <span class="input-icon">
-            <i class="fas fa-calendar"></i>
-          </span>
-          <input
-            type="date"
-            id="birthdate"
-            formControlName="birthdate"
-            [ngClass]="{'is-invalid': birthdateInvalid}"
-          >
-        </div>
+        <mat-form-field appearance="fill" class="w-100">
+          <mat-label>Fecha de nacimiento</mat-label>
+          <input matInput [matDatepicker]="picker" id="birthdate" formControlName="birthdate" [ngClass]="{'is-invalid': birthdateInvalid}" required>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
         @if (birthdateInvalid) {
           <div class="error-message">
             @if (birthdateControl?.errors?.['required']) {

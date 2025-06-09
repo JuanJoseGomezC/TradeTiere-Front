@@ -36,7 +36,7 @@
             <label for="raza">Raza:</label>
             <select id="raza" [(ngModel)]="razaSeleccionada" (change)="applyFilters()" [disabled]="!especieSeleccionada">
               <option value="">Todas las razas</option>
-              @for (raza of razasFiltradas; track raza.id) {
+              @for (raza of filteredRazasBySearch; track raza.id) {
                 <option [value]="raza.id">{{ raza.name }}</option>
               }
             </select>

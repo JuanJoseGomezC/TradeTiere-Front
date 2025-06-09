@@ -917,3 +917,8 @@
   font-size: 0.95em;
   margin-right: 0.3em;
 }
+
+.breed-search-input {
+  margin-bottom: 6px;
+  width: 100%;
+}

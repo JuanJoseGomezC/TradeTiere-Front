@@ -63,6 +63,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
   minDate: string = '';
   maxDate: string = '';
 
+  // Nuevo variable para el término de búsqueda de razas
+  breedSearchTerm: string = '';
+
+  // Controlar la visibilidad del buscador de razas
+  showBreedSearch: boolean = false;
+
   constructor(
     private advertismentService: AdvertismentService,
     private route: ActivatedRoute,
@@ -81,19 +87,16 @@ export class HomeComponent implements OnInit, AfterViewInit {
     // Cargar localizaciones e idiomas desde la base de datos
     this.locationService.getAll().subscribe(locs => this.locations = locs);
     this.languageService.getAll().subscribe(langs => this.languages = langs);
-    // Cargar todas las razas al inicio (opcional, para filtrar después)
-    this.updateBreedsFromDB();
+    // No cargar razas globalmente, solo al seleccionar especie
+    // this.updateBreedsFromDB();
 
     // Check if there are filters in the query params
     this.route.queryParams.subscribe(params => {
       if (params['especie']) {
         this.especieSeleccionada = params['especie'];
-        // Update filtered breeds based on especie
-        this.updateFilteredBreeds();
-
+        this.updateBreedsFromDB(); // Cargar razas de la especie seleccionada
         // If there's also a raza parameter and we have filtered breeds
         if (params['raza'] && this.razasFiltradas.length > 0) {
-          // Verify that the selected breed belongs to the selected especie
           const breedExists = this.razasFiltradas.some(breed => breed.id === params['raza']);
           if (breedExists) {
             this.razaSeleccionada = params['raza'];
@@ -127,6 +130,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     if (this.especieSeleccionada) {
       const specieId = Number(this.especieSeleccionada);
       if (!isNaN(specieId)) {
+        // Obtener razas de la BBDD solo de la especie seleccionada
         this.raceService.getRacesBySpecie(specieId).subscribe(breeds => {
           this.razas = breeds;
           this.updateFilteredBreeds();
@@ -136,23 +140,18 @@ export class HomeComponent implements OnInit, AfterViewInit {
         this.razasFiltradas = [];
       }
     } else {
-      this.raceService.getAllEnhanced().subscribe(breeds => {
-        this.razas = breeds;
-        this.updateFilteredBreeds();
-      });
+      // Si no hay especie seleccionada, no mostrar razas (ni cargar todas)
+      this.razas = [];
+      this.razasFiltradas = [];
     }
   }
 
   // Update filtered breeds based on selected especie
   updateFilteredBreeds(): void {
     if (this.especieSeleccionada) {
-      // Asegurarse de comparar correctamente el tipo de dato (string vs number)
-      this.razasFiltradas = this.razas.filter(breed => {
-        // breed.specie puede ser number o string
-        return String(breed.specie) === String(this.especieSeleccionada) || String(breed.specieId) === String(this.especieSeleccionada);
-      });
-    } else {
       this.razasFiltradas = this.razas;
+    } else {
+      this.razasFiltradas = [];
     }
   }
 
@@ -215,6 +214,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
       }
     });
     */
+  }
+
+  // Nuevo método para filtrar razas por texto
+  get filteredRazasBySearch(): any[] {
+    if (!this.breedSearchTerm) return this.razasFiltradas;
+    return this.razasFiltradas.filter(raza =>
+      raza.name.toLowerCase().includes(this.breedSearchTerm.toLowerCase())
+    );
   }
 
   applyFilters(): void {

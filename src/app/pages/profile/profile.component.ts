@@ -177,8 +177,18 @@ export class ProfileComponent implements OnInit {
 
   saveProfile(): void {
     if (this.editableProfile && this.editableProfile.id) {
-      this.isLoading = true;
+      // Validar antes de guardar (sin validar contraseña en edición de perfil)
+      const validationError = this.validateRegisterFields({
+        mail: this.editableProfile.mail || '',
+        birthdate: this.editableProfile.birthday ? this.editableProfile.birthday : '',
+        password: ''
+      }, false);
+      if (validationError) {
+        alert(validationError);
+        return;
+      }
 
+      this.isLoading = true;
       this.profileService.updateProfile(this.editableProfile).subscribe(
         (updatedProfile) => {
           this.profile = updatedProfile;
@@ -243,5 +253,30 @@ export class ProfileComponent implements OnInit {
         }
       );
     }
+  }
+
+  validateRegisterFields(register: { mail: string; birthdate: string | Date; password: string; }, validatePassword: boolean = true): string | null {
+    // Email
+    if (!/^[\w-\.]+@[\w-]+\.[a-zA-Z]{2,}$/.test(register.mail)) {
+      return 'El email no tiene un formato válido.';
+    }
+    // Edad >= 18 años
+    const birth = new Date(register.birthdate);
+    const now = new Date();
+    const minDate = new Date(now.getFullYear() - 18, now.getMonth(), now.getDate());
+    if (birth > minDate) {
+      return 'Debes tener al menos 18 años para registrarte.';
+    }
+    if (validatePassword) {
+      // Contraseña longitud
+      if (!register.password || register.password.length < 8) {
+        return 'La contraseña debe tener al menos 8 caracteres.';
+      }
+      // Contraseña: mayúscula, minúscula y dígito
+      if (!/[A-Z]/.test(register.password) || !/[a-z]/.test(register.password) || !/\d/.test(register.password)) {
+        return 'La contraseña debe contener al menos una mayúscula, una minúscula y un número.';
+      }
+    }
+    return null;
   }
 }

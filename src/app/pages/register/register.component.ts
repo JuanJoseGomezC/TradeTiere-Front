@@ -3,11 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService, RegisterDto } from '../../services/auth.service';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatNativeDateModule } from '@angular/material/core';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, MatDatepickerModule, MatFormFieldModule, MatInputModule, MatNativeDateModule],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
@@ -25,7 +29,7 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeForm();
-    
+
     // Resetear error al modificar el formulario
     this.registerForm.valueChanges.subscribe(() => {
       if (this.registerError) {
@@ -72,12 +76,23 @@ export class RegisterComponent implements OnInit {
       return;
     }
 
+    // Validación avanzada antes de enviar
+    const validationError = this.validateRegisterFields({
+      mail: this.registerForm.value.email || '',
+      birthdate: this.registerForm.value.birthdate || '',
+      password: this.registerForm.value.password || ''
+    });
+    if (validationError) {
+      this.registerError = validationError;
+      return;
+    }
+
     this.isSubmitting = true;
     this.registerError = '';
 
     // Obtener valores del formulario
     const { name, lastname, email: mail, phone, birthdate, password } = this.registerForm.value;
-    
+
     // Crear objeto RegisterDto para la API
     const registerData: RegisterDto = {
       mail,
@@ -93,16 +108,11 @@ export class RegisterComponent implements OnInit {
     this.authService.register(registerData).subscribe({
       next: (user) => {
         console.log('RegisterComponent: Registro exitoso:', user);
-        
-        // Redirigir al usuario a la página de inicio
         this.router.navigate(['/home']);
-        
         this.isSubmitting = false;
       },
       error: (error) => {
         console.error('RegisterComponent: Error en el registro:', error);
-        
-        // Manejo de diferentes tipos de errores
         if (error.status === 409) {
           this.registerError = 'El correo electrónico ya está registrado.';
         } else if (error.status === 400) {
@@ -110,11 +120,28 @@ export class RegisterComponent implements OnInit {
         } else {
           this.registerError = error.message || 'Error durante el registro. Por favor, inténtelo de nuevo.';
         }
-        
         this.isSubmitting = false;
       }
     });
   }
+
+  validateRegisterFields({ mail, birthdate, password }: { mail: string, birthdate: string, password: string }): string | null {
+    // Validar edad (mayor de 18 años)
+    const birthdateObj = new Date(birthdate);
+    const age = new Date().getFullYear() - birthdateObj.getFullYear();
+    if (age < 18) {
+      return 'Debes tener al menos 18 años para registrarte.';
+    }
+
+    // Validar contraseña (mínimo 8 caracteres, al menos una mayúscula, una minúscula y un número)
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordPattern.test(password)) {
+      return 'La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número.';
+    }
+
+    return null;
+  }
+
   // Getters para acceder fácilmente al estado de los campos en el template
   get nameControl() { return this.registerForm.get('name'); }
   get lastnameControl() { return this.registerForm.get('lastname'); }
