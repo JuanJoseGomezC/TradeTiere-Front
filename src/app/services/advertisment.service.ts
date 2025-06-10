@@ -31,8 +31,8 @@ export interface CreateAdvertismentDto {
   description: string;
   price: number;
   location: number;
-  specie: number;
-  race: number;
+  specie: SpecieDto;
+  race: RaceDto;
   language: number;
   birthdate: Date;
   gender: string;
@@ -69,8 +69,8 @@ export interface FormValue {
   description: string;
   price: number;
   location: number | string;
-  specie: number | string;
-  race: number | string;
+  specie: SpecieDto;
+  race: RaceDto;
   language: number | string;
   birthdate: string | Date;
   gender: string;
@@ -140,8 +140,8 @@ export class AdvertismentService {
       description: data.description,
       price: data.price,
       location: Number(data.location),
-      specie: Number(data.specie),
-      race: Number(data.race),
+      specie: data.specie,
+      race: data.race,
       language: Number(data.language),
       birthdate: new Date(data.birthdate),
       gender: data.gender,

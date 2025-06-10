@@ -8,6 +8,10 @@ import { HttpClientModule } from '@angular/common/http';
 import { catchError, switchMap, tap, of } from 'rxjs';
 import { CreateAdModalComponent } from "../../components/create-ad-modal/create-ad-modal.component";
 import { AdvertismentService } from '../../services/advertisment.service';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatNativeDateModule } from '@angular/material/core';
 
 interface UserAd {
   id: number;
@@ -34,7 +38,7 @@ interface FavoriteAd {
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, HttpClientModule, CreateAdModalComponent],
+  imports: [CommonModule, RouterLink, FormsModule, HttpClientModule, CreateAdModalComponent, MatDatepickerModule, MatFormFieldModule, MatInputModule, MatNativeDateModule],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
@@ -184,26 +188,43 @@ export class ProfileComponent implements OnInit {
         password: ''
       }, false);
       if (validationError) {
-        alert(validationError);
+        // alert(validationError);
         return;
       }
 
       this.isLoading = true;
-      this.profileService.updateProfile(this.editableProfile).subscribe(
+      // Solo enviar los campos editables: name, lastname, birthday (como Date)
+      const updateData = {
+        name: this.editableProfile.name,
+        lastname: this.editableProfile.lastname,
+        birthday: this.editableProfile.birthday ? new Date(this.editableProfile.birthday) : undefined
+      };
+      this.profileService.updateProfile(updateData).subscribe(
         (updatedProfile) => {
-          this.profile = updatedProfile;
-          this.editableProfile = { ...updatedProfile };
+          // Actualizar solo los campos editados, manteniendo el id y tipos
+          if (this.profile) {
+            this.profile = { ...this.profile, ...updateData };
+            this.editableProfile = { ...this.profile };
+          }
           this.isEditing = false;
           this.isLoading = false;
-          alert('Perfil actualizado con éxito');
+          // alert('Perfil actualizado con éxito');
         },
         (error) => {
           console.error('Error updating profile:', error);
           this.isLoading = false;
-          alert('Error al actualizar el perfil');
+          // alert('Error al actualizar el perfil');
         }
       );
     }
+  }
+
+  // Formatea la fecha a yyyy-MM-dd
+  private formatDate(date: Date): string {
+    const d = new Date(date);
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    return `${d.getFullYear()}-${month}-${day}`;
   }
 
   removeFromFavorites(adId: number) {

@@ -38,10 +38,7 @@ export class ProfileService {
     return this.apiService.get<UserProfile>(`/user/${userId}`);
   }
   updateProfile(profileData: Partial<UserProfile>): Observable<UserProfile> {
-    if (!profileData.id) {
-      return throwError(() => new Error('Usuario no especificado'));
-    }
-
+    // No comprobar ni enviar el id, solo los campos editables
     return this.apiService.put<UserProfile>(`/user/updateProfile`, profileData);
   }
   changePassword(userId: number, currentPassword: string, newPassword: string): Observable<boolean> {

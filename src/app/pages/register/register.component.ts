@@ -42,7 +42,6 @@ export class RegisterComponent implements OnInit {
       name: ['', [Validators.required, Validators.minLength(3)]],
       lastname: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
       birthdate: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]],
@@ -91,7 +90,7 @@ export class RegisterComponent implements OnInit {
     this.registerError = '';
 
     // Obtener valores del formulario
-    const { name, lastname, email: mail, phone, birthdate, password } = this.registerForm.value;
+    const { name, lastname, email: mail, birthdate, password } = this.registerForm.value;
 
     // Crear objeto RegisterDto para la API
     const registerData: RegisterDto = {
@@ -102,24 +101,50 @@ export class RegisterComponent implements OnInit {
       birthdate: birthdate ? new Date(birthdate).toISOString() : new Date().toISOString()
     };
 
-    console.log('RegisterComponent: Enviando datos de registro:', registerData);
-
-    // Llamar al servicio de autenticación para registrar al usuario
+    // Feedback visual moderno
+    // Mostrar spinner en el botón y deshabilitar el formulario
+    // (esto ya está en el template, pero aquí puedes agregar un toast o SweetAlert2)
     this.authService.register(registerData).subscribe({
       next: (user) => {
-        console.log('RegisterComponent: Registro exitoso:', user);
+        // Mostrar toast de éxito
+        const win = window as any;
+        if (win.Swal) {
+          win.Swal.fire({
+            icon: 'success',
+            title: '¡Registro exitoso!',
+            text: 'Tu cuenta ha sido creada correctamente.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        } else {
+          alert('¡Registro exitoso!');
+        }
         this.router.navigate(['/home']);
         this.isSubmitting = false;
       },
       error: (error) => {
-        console.error('RegisterComponent: Error en el registro:', error);
+        // Mostrar toast de error
+        let msg = 'Error durante el registro. Por favor, inténtelo de nuevo.';
         if (error.status === 409) {
-          this.registerError = 'El correo electrónico ya está registrado.';
+          msg = 'El correo electrónico ya está registrado.';
         } else if (error.status === 400) {
-          this.registerError = 'Datos de registro inválidos. Por favor revise los campos.';
-        } else {
-          this.registerError = error.message || 'Error durante el registro. Por favor, inténtelo de nuevo.';
+          msg = 'Datos de registro inválidos. Por favor revise los campos.';
+        } else if (error.message) {
+          msg = error.message;
         }
+        const win = window as any;
+        if (win.Swal) {
+          win.Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: msg,
+            timer: 2500,
+            showConfirmButton: false
+          });
+        } else {
+          alert(msg);
+        }
+        this.registerError = msg;
         this.isSubmitting = false;
       }
     });
@@ -146,7 +171,6 @@ export class RegisterComponent implements OnInit {
   get nameControl() { return this.registerForm.get('name'); }
   get lastnameControl() { return this.registerForm.get('lastname'); }
   get emailControl() { return this.registerForm.get('email'); }
-  get phoneControl() { return this.registerForm.get('phone'); }
   get birthdateControl() { return this.registerForm.get('birthdate'); }
   get passwordControl() { return this.registerForm.get('password'); }
   get confirmPasswordControl() { return this.registerForm.get('confirmPassword'); }
@@ -154,12 +178,8 @@ export class RegisterComponent implements OnInit {
   get nameInvalid() { return this.nameControl?.invalid && (this.nameControl?.touched || this.nameControl?.dirty); }
   get lastnameInvalid() { return this.lastnameControl?.invalid && (this.lastnameControl?.touched || this.lastnameControl?.dirty); }
   get emailInvalid() { return this.emailControl?.invalid && (this.emailControl?.touched || this.emailControl?.dirty); }
-  get phoneInvalid() { return this.phoneControl?.invalid && (this.phoneControl?.touched || this.phoneControl?.dirty); }
   get birthdateInvalid() { return this.birthdateControl?.invalid && (this.birthdateControl?.touched || this.birthdateControl?.dirty); }
   get passwordInvalid() { return this.passwordControl?.invalid && (this.passwordControl?.touched || this.passwordControl?.dirty); }
-  get confirmPasswordInvalid() {
-    return (this.confirmPasswordControl?.invalid || this.registerForm.hasError('passwordMismatch')) &&
-           (this.confirmPasswordControl?.touched || this.confirmPasswordControl?.dirty);
-  }
+  get confirmPasswordInvalid() { return this.confirmPasswordControl?.invalid && (this.confirmPasswordControl?.touched || this.confirmPasswordControl?.dirty); }
   get termsInvalid() { return this.termsControl?.invalid && (this.termsControl?.touched || this.termsControl?.dirty); }
 }

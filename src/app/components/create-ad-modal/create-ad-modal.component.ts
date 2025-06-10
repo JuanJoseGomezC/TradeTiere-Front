@@ -135,7 +135,7 @@ export class CreateAdModalComponent implements OnInit {
       const raceControl = this.adForm.get('race');
       raceControl?.reset('');
       if (specieId) {
-        this.loadRacesBySpecie(specieId);
+        this.loadRacesBySpecie(specieId.id);
         raceControl?.enable();
       } else {
         this.filteredRaces = [];
@@ -189,6 +189,7 @@ export class CreateAdModalComponent implements OnInit {
   }
 
   onSubmit(): void {
+    debugger
     if (this.adForm.invalid) {
       this.adForm.markAllAsTouched();
       return;

@@ -62,64 +62,50 @@
         <div class="profile-section">
           <div class="section-header">
             <h2>Información personal</h2>
-            @if (!isEditing) {              <button type="button" class="edit-button" (click)="startEditing()">
+            @if (!isEditing) {
+              <button type="button" class="edit-button" (click)="startEditing()">
                 <i class="fas fa-pencil-alt"></i> Editar
               </button>
             }
           </div>
 
           @if (!isEditing) {
-            <div class="profile-info">              <div class="info-group">
-                <label>Nombre completo</label>
+            <div class="profile-info">
+              <div class="info-group">
+                <label>Nombre</label>
                 <p>{{ profile.name }}</p>
-              </div>              <div class="info-group">
+              </div>
+              <div class="info-group">
+                <label>Apellidos</label>
+                <p>{{ profile.lastname }}</p>
+              </div>
+              <div class="info-group">
+                <label>Fecha de nacimiento</label>
+                <p>{{ profile.birthday | date:'dd/MM/yyyy' }}</p>
+              </div>
+              <div class="info-group">
                 <label>Correo electrónico</label>
                 <p>{{ profile.mail }}</p>
               </div>
-              <div class="info-group">
-                <label>Teléfono</label>
-                <p>{{ profile.phone }}</p>
-              </div>
-              <div class="info-group">
-                <label>Dirección</label>
-                <p>{{ profile.address }}</p>
-              </div>
-              <div class="info-group">
-                <label>Provincia</label>
-                <p>{{ profile.province }}</p>
-              </div>
-              <div class="info-group full-width">
-                <label>Sobre mí</label>
-                <p class="bio">{{ profile.about }}</p>
-              </div>
             </div>
-          } @else if (editableProfile) {            <form class="profile-form">
+          } @else if (editableProfile) {
+            <form class="profile-form">
               <div class="form-group">
-                <label for="name">Nombre completo</label>
+                <label for="name">Nombre</label>
                 <input type="text" id="name" name="name" [(ngModel)]="editableProfile.name">
-              </div>              <div class="form-group">
-                <label for="email">Correo electrónico</label>
-                <input type="email" id="email" name="email" [(ngModel)]="editableProfile.mail">
               </div>
               <div class="form-group">
-                <label for="phone">Teléfono</label>
-                <input type="tel" id="phone" name="phone" [(ngModel)]="editableProfile.phone">
+                <label for="lastname">Apellidos</label>
+                <input type="text" id="lastname" name="lastname" [(ngModel)]="editableProfile.lastname">
               </div>
               <div class="form-group">
-                <label for="address">Dirección</label>
-                <input type="text" id="address" name="address" [(ngModel)]="editableProfile.address">
-              </div>
-              <div class="form-group">
-                <label for="province">Provincia</label>
-                <input type="text" id="province" name="province" [(ngModel)]="editableProfile.province">
-              </div>
-              <div class="form-group">
-                <label for="website">Sitio web</label>
-                <input type="url" id="website" name="website" [(ngModel)]="editableProfile.website">
-              </div>
-              <div class="form-group full-width">
-                <label for="about">Sobre mí</label>
-                <textarea id="about" name="about" rows="5" [(ngModel)]="editableProfile.about"></textarea>
+                <label for="birthday">Fecha de nacimiento</label>
+                <mat-form-field appearance="fill" class="w-100">
+                  <mat-label>Fecha de nacimiento</mat-label>
+                  <input matInput [matDatepicker]="picker" id="birthday" name="birthday" [(ngModel)]="editableProfile.birthday">
+                  <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
               </div>
               <div class="form-actions">
                 <button type="button" class="secondary-button" (click)="cancelEditing()">Cancelar</button>
