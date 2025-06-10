@@ -15,10 +15,9 @@ import { AdvertismentService } from './advertisment.service';
  * This is for demonstration purposes only
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ExampleIntegrationService {
-
   constructor(
     private advertismentService: AdvertismentService,
     private specieService: SpecieService,
@@ -27,7 +26,7 @@ export class ExampleIntegrationService {
     private languageService: LanguageService,
     private purchaseHistoryService: PurchaseHistoryService,
     private userService: UserService
-  ) { }
+  ) {}
 
   /**
    * Get advertisment details with all related data
@@ -35,25 +34,36 @@ export class ExampleIntegrationService {
    */
   getFullAdvertismentDetails(advertismentId: number): Observable<any> {
     return this.advertismentService.getAdvertismentById(advertismentId).pipe(
-      switchMap(ad => {
+      switchMap((ad) => {
         if (!ad) return of(null);
 
-        // Fetch all related data for this advertisment
         return forkJoin({
           ad: of(ad),
-          specie: this.specieService.getById(ad.specie),
-          race: this.raceService.getById(ad.race),
-          location: this.locationService.getById(ad.location),
-          language: this.languageService.getById(ad.language),
-          seller: ad.sellerId ? this.userService.getById(ad.sellerId) : of(null)
+          specie:
+            ad.specie && ad.specie.id !== undefined
+              ? this.specieService.getById(ad.specie.id)
+              : of(null),
+          race:
+            ad.race && ad.race.id !== undefined
+              ? this.raceService.getById(ad.race.id)
+              : of(null),
+          location: ad.location
+            ? this.locationService.getById(ad.location)
+            : of(null),
+          language: ad.language
+            ? this.languageService.getById(ad.language)
+            : of(null),
+          seller: ad.sellerId
+            ? this.userService.getById(ad.sellerId)
+            : of(null),
         }).pipe(
-          map(result => ({
+          map((result) => ({
             ...result.ad,
             specieInfo: result.specie,
             raceInfo: result.race,
             locationInfo: result.location,
             languageInfo: result.language,
-            sellerInfo: result.seller
+            sellerInfo: result.seller,
           }))
         );
       })
@@ -66,19 +76,19 @@ export class ExampleIntegrationService {
    */
   getUserProfile(userId: number): Observable<any> {
     return this.userService.getUserEnhanced(userId).pipe(
-      switchMap(user => {
+      switchMap((user) => {
         // Fetch all related data for this user
         return forkJoin({
           user: of(user),
           advertisments: this.userService.getUserAdvertisments(userId),
           favorites: this.userService.getUserFavorites(userId),
-          purchases: this.purchaseHistoryService.findAllByMail(user.mail)
+          purchases: this.purchaseHistoryService.findAllByMail(user.mail),
         }).pipe(
-          map(result => ({
+          map((result) => ({
             ...result.user,
             advertisments: result.advertisments,
             favorites: result.favorites,
-            purchases: result.purchases
+            purchases: result.purchases,
           }))
         );
       })
@@ -92,9 +102,9 @@ export class ExampleIntegrationService {
   getHomePageData(): Observable<any> {
     return forkJoin({
       advertisments: this.advertismentService.getAdvertisments(),
-      species: this.specieService.getAllEnhanced(),
+      species: this.specieService.getAll(),
       locations: this.locationService.getAllEnhanced(),
-      languages: this.languageService.getAll()
+      languages: this.languageService.getAll(),
     });
   }
 
@@ -111,17 +121,19 @@ export class ExampleIntegrationService {
     searchTerm?: string;
   }): Observable<any> {
     return this.advertismentService.getAdvertisments().pipe(
-      map(ads => {
+      map((ads) => {
         // Apply filters
-        return ads.filter(ad => {
+        return ads.filter((ad) => {
           // Filter by specie
-          if (filters.specieId && ad.specie !== filters.specieId) return false;
+          if (filters.specieId && ad.specie?.id !== filters.specieId)
+            return false;
 
           // Filter by race
-          if (filters.raceId && ad.race !== filters.raceId) return false;
+          if (filters.raceId && ad.race?.id !== filters.raceId) return false;
 
           // Filter by location
-          if (filters.locationId && ad.location !== filters.locationId) return false;
+          if (filters.locationId && ad.location !== filters.locationId)
+            return false;
 
           // Filter by price range
           if (filters.minPrice && ad.price < filters.minPrice) return false;
@@ -130,8 +142,10 @@ export class ExampleIntegrationService {
           // Filter by search term
           if (filters.searchTerm) {
             const term = filters.searchTerm.toLowerCase();
-            if (!ad.title.toLowerCase().includes(term) &&
-                !ad.description.toLowerCase().includes(term)) {
+            if (
+              !ad.title.toLowerCase().includes(term) &&
+              !ad.description.toLowerCase().includes(term)
+            ) {
               return false;
             }
           }

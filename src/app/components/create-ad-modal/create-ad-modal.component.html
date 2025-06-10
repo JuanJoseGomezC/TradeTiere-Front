@@ -99,7 +99,7 @@
                     <mat-label>Especie *</mat-label>
                     <mat-select class="select2" formControlName="specie" required>
                       @for (s of species; track s.id) {
-                      <mat-option [value]="s.id">{{ s.name }}</mat-option>
+                      <mat-option [value]="s">{{ s.name }}</mat-option>
                       }
                     </mat-select>
                     <mat-error>Campo requerido.</mat-error>
@@ -110,7 +110,7 @@
                     <mat-select class="select2" formControlName="race" required>
                       @if (adForm.get('specie')?.value) { @for(r of filteredRaces;
                       track r.id){
-                      <mat-option [value]="r.id">{{ r.name }}</mat-option>
+                      <mat-option [value]="r">{{ r.name }}</mat-option>
                       } @if(filteredRaces.length === 0) {
                       <mat-option disabled
                         >No hay razas para esta especie</mat-option

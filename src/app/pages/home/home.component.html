@@ -1,7 +1,6 @@
 <div class="home-container">
   <div class="main-content-layout">
     <div class="home-flex-layout">
-      <!-- Filters Section -->
       <aside class="filters-section">
         <div class="filters-container">
           <h2>Filtrar anuncios</h2>
@@ -70,16 +69,6 @@
               <option value="Hembra">Hembra</option>
             </select>
           </div>
-
-          <!-- Eliminar filtro de estado -->
-          <!-- <div class="filter-group">
-            <label for="state">Estado:</label>
-            <select id="state" [(ngModel)]="selectedState" (change)="applyFilters()">
-              <option value="">Todos</option>
-              <option value="true">Activo</option>
-              <option value="false">Vendido</option>
-            </select>
-          </div> -->
 
           <div class="filter-group">
             <label>Edad (meses):</label>
@@ -156,7 +145,6 @@
           </div>
         </div>
       </aside>
-      <!-- Advertisments Section -->
       <section class="advertisments-section">
         <h2>Anuncios disponibles</h2>
 
@@ -188,13 +176,7 @@
                       <i class="fas fa-image"></i>
                     </div>
                   }
-                  <!-- Badge for categories -->
-                  <span class="category-badge">{{ ad.category === 'vacuno' ? 'Vacuno' :
-                                              ad.category === 'ovino' ? 'Ovino' :
-                                              ad.category === 'caprino' ? 'Caprino' :
-                                              ad.category === 'porcino' ? 'Porcino' :
-                                              ad.category === 'avicola' ? 'Avícola' :
-                                              ad.category === 'equino' ? 'Equino' : 'Otros' }}</span>
+                  <span class="category-badge">{{ ad.specie.name }}</span>
                 </div>
                 <div class="ad-details">
                   <h3 class="ad-title">
@@ -240,4 +222,3 @@
     </div>
   </div>
 </div>
-
