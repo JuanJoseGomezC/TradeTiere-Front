@@ -3,10 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  Advertisment,
-  AdvertismentService,
-} from '../../services/advertisment.service';
+import { Advertisment, AdvertismentService } from '../../services/advertisment.service';
 import { LocationService } from '../../services/location.service';
 import { LanguageService } from '../../services/language.service';
 import { SpecieService } from '../../services/specie.service';
@@ -27,10 +24,10 @@ import Swal from 'sweetalert2';
     MatDatepickerModule,
     MatFormFieldModule,
     MatInputModule,
-    MatNativeDateModule,
+    MatNativeDateModule
   ],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css',
+  styleUrl: './home.component.css'
 })
 export class HomeComponent implements OnInit, AfterViewInit {
   advertisments: Advertisment[] = [];
@@ -84,7 +81,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     // Cargar especies desde la base de datos
-    this.specieService.getAll().subscribe((species) => {
+    this.specieService.getAll().subscribe(species => {
       this.especies = species;
     });
     // Cargar localizaciones e idiomas desde la base de datos
@@ -92,24 +89,15 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.languageService.getAll().subscribe(langs => this.languages = langs);
     // No cargar razas globalmente, solo al seleccionar especie
     // this.updateBreedsFromDB();
-    this.locationService.getAll().subscribe((locs) => (this.locations = locs));
-    this.languageService
-      .getAll()
-      .subscribe((langs) => (this.languages = langs));
-    // Cargar todas las razas al inicio (opcional, para filtrar después)
-    this.updateBreedsFromDB();
 
     // Check if there are filters in the query params
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.subscribe(params => {
       if (params['especie']) {
         this.especieSeleccionada = params['especie'];
         this.updateBreedsFromDB(); // Cargar razas de la especie seleccionada
         // If there's also a raza parameter and we have filtered breeds
         if (params['raza'] && this.razasFiltradas.length > 0) {
-          // Verify that the selected breed belongs to the selected especie
-          const breedExists = this.razasFiltradas.some(
-            (breed) => breed.id === params['raza']
-          );
+          const breedExists = this.razasFiltradas.some(breed => breed.id === params['raza']);
           if (breedExists) {
             this.razaSeleccionada = params['raza'];
           }
@@ -144,12 +132,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
       if (!isNaN(specieId)) {
         // Obtener razas de la BBDD solo de la especie seleccionada
         this.raceService.getRacesBySpecie(specieId).subscribe(breeds => {
-        this.raceService.getRacesBySpecie(specieId).subscribe((breeds) => {
           this.razas = breeds;
           this.updateFilteredBreeds();
         });
-      })
-    } else {
+      } else {
         this.razas = [];
         this.razasFiltradas = [];
       }
@@ -157,26 +143,15 @@ export class HomeComponent implements OnInit, AfterViewInit {
       // Si no hay especie seleccionada, no mostrar razas (ni cargar todas)
       this.razas = [];
       this.razasFiltradas = [];
-      this.raceService.getAllEnhanced().subscribe((breeds) => {
-        this.razas = breeds;
-        this.updateFilteredBreeds();
-      });
     }
   }
 
   // Update filtered breeds based on selected especie
   updateFilteredBreeds(): void {
     if (this.especieSeleccionada) {
-      // Asegurarse de comparar correctamente el tipo de dato (string vs number)
-      this.razasFiltradas = this.razas.filter((breed) => {
-        // breed.specie puede ser number o string
-        return (
-          String(breed.specie) === String(this.especieSeleccionada) ||
-          String(breed.specieId) === String(this.especieSeleccionada)
-        );
-      });
-    } else {
       this.razasFiltradas = this.razas;
+    } else {
+      this.razasFiltradas = [];
     }
   }
 
@@ -191,45 +166,54 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.loading = true;
     this.error = null;
 
-    // YA NO SE USA: Se comenta o elimina la llamada a los datos de prueba.
-    // this.createMockAdvertisments();
+    // Create mock data during development
+    this.createMockAdvertisments();
 
-    // SE ACTIVA: El código para llamar al servicio real.
+    // Calcular el valor máximo del slider basado en los precios de los anuncios
+    const prices = this.advertisments.map(ad => ad.price);
+    const maxPrice = Math.max(...prices);
+    if (maxPrice > 0) {
+      this.maxSliderValue = Math.ceil(maxPrice / 1000) * 1000;
+    }
+
+    // Initialize max price to maxSliderValue if not already set by URL params
+    if (!this.isMaxPriceActive) {
+      this.maxPrice = this.maxSliderValue;
+    }
+
+    // Actualizar el slider track después de cambiar los valores
+    setTimeout(() => {
+      this.updateSliderTrack();
+    }, 100);
+
+    // In production, uncomment this code to use the real service
+    /*
     this.advertismentService.getAdvertisments().subscribe({
       next: (ads) => {
-        // 1. Los datos del servicio se asignan a la lista maestra.
         this.advertisments = ads;
 
-        // 2. Se realizan los cálculos de precio con los datos reales.
-        const prices = ads.map((ad) => ad.price);
+        // Calcular el valor máximo del slider basado en los precios de los anuncios
+        const prices = ads.map(ad => ad.price);
         const maxPrice = Math.max(...prices);
         if (maxPrice > 0) {
+          // Redondeamos hacia arriba al siguiente múltiplo de 1000 para tener un valor redondo
           this.maxSliderValue = Math.ceil(maxPrice / 1000) * 1000;
         }
 
+        // Si no hay precio máximo seleccionado, inicializarlo con el valor máximo del slider
         if (!this.isMaxPriceActive) {
           this.maxPrice = this.maxSliderValue;
         }
 
-        // 3. Se aplican los filtros para mostrar los anuncios en la plantilla.
         this.applyFilters();
-
-        // 4. Se desactiva la pantalla de carga.
         this.loading = false;
-
-        // 5. Se actualiza el slider después de que todo está listo.
-        setTimeout(() => {
-          this.updateSliderTrack();
-        }, 100);
       },
       error: (err) => {
-        // En caso de error en la comunicación con el servicio.
-        this.showError(
-          'No se pudieron cargar los anuncios. Por favor, inténtelo de nuevo más tarde.'
-        );
+        this.showError('No se pudieron cargar los anuncios. Por favor, inténtelo de nuevo más tarde.');
         this.loading = false;
-      },
+      }
     });
+    */
   }
 
   // Nuevo método para filtrar razas por texto
@@ -245,110 +229,85 @@ export class HomeComponent implements OnInit, AfterViewInit {
       let filtered = [...this.advertisments];
 
       // Filtrar solo anuncios activos
-      filtered = filtered.filter((ad) => ad.state === true);
+      filtered = filtered.filter(ad => ad.state === true);
 
       // Filter by especie
       if (this.especieSeleccionada) {
-        filtered = filtered.filter(
-          (ad) =>
-            ad.specie &&
-            ad.specie.id &&
-            ad.specie.id.toString() === this.especieSeleccionada
+        // API model uses 'specie' (number), frontend model may use 'category' (string)
+        filtered = filtered.filter(ad =>
+          (ad.specie && ad.specie.toString() === this.especieSeleccionada) ||
+          (ad.category && ad.category === this.getEspecieName(this.especieSeleccionada))
         );
       }
 
       // Filter by raza
       if (this.razaSeleccionada) {
-        const selectedBreedName = this.razas.find(
-          (b) => b.id === this.razaSeleccionada
-        )?.name;
+        const selectedBreedName = this.razas.find(b => b.id === this.razaSeleccionada)?.name;
         if (selectedBreedName) {
-          filtered = filtered.filter(
-            (ad) =>
-              (ad.race && ad.race.toString() === this.razaSeleccionada) ||
-              (ad.breed &&
-                ad.breed.toLowerCase() === selectedBreedName.toLowerCase())
+          filtered = filtered.filter(ad =>
+            (ad.race && ad.race.toString() === this.razaSeleccionada) ||
+            (ad.breed && ad.breed.toLowerCase() === selectedBreedName.toLowerCase())
           );
         }
       }
 
       // Filter by price range
-      console.log(
-        `Applying filters - Min price: ${this.minPrice}, isActive: ${this.isMinPriceActive}, Max price: ${this.maxPrice}, isActive: ${this.isMaxPriceActive}`
-      );
+      console.log(`Applying filters - Min price: ${this.minPrice}, isActive: ${this.isMinPriceActive}, Max price: ${this.maxPrice}, isActive: ${this.isMaxPriceActive}`);
 
       // Aplicar filtro de precio mínimo
       if (this.minPrice > 0) {
-        filtered = filtered.filter((ad) => ad.price >= this.minPrice);
+        filtered = filtered.filter(ad => ad.price >= this.minPrice);
         this.isMinPriceActive = true;
-        console.log(
-          `Filtered by min price: ${this.minPrice}. Remaining ads: ${filtered.length}`
-        );
+        console.log(`Filtered by min price: ${this.minPrice}. Remaining ads: ${filtered.length}`);
       } else {
         this.isMinPriceActive = false;
       }
 
       // Aplicar filtro de precio máximo
       if (this.maxPrice < this.maxSliderValue) {
-        filtered = filtered.filter((ad) => ad.price <= this.maxPrice);
+        filtered = filtered.filter(ad => ad.price <= this.maxPrice);
         this.isMaxPriceActive = true;
-        console.log(
-          `Filtered by max price: ${this.maxPrice}. Remaining ads: ${filtered.length}`
-        );
+        console.log(`Filtered by max price: ${this.maxPrice}. Remaining ads: ${filtered.length}`);
       } else {
         this.isMaxPriceActive = false;
       }
 
       // Filter by localización
       if (this.selectedLocation) {
-        filtered = filtered.filter(
-          (ad) => ad.province === this.selectedLocation
-        );
+        filtered = filtered.filter(ad => ad.province === this.selectedLocation);
       }
       // Filter by idioma
       if (this.selectedLanguage) {
-        filtered = filtered.filter(
-          (ad) => String(ad.language) === String(this.selectedLanguage)
-        );
+        filtered = filtered.filter(ad => String(ad.language) === String(this.selectedLanguage));
       }
       // Filter by género
       if (this.selectedGender) {
-        filtered = filtered.filter((ad) => ad.gender === this.selectedGender);
+        filtered = filtered.filter(ad => ad.gender === this.selectedGender);
       }
       // Filter by edad
       if (this.minAge !== null) {
-        filtered = filtered.filter(
-          (ad) => ad.age !== undefined && ad.age >= this.minAge!
-        );
+        filtered = filtered.filter(ad => ad.age !== undefined && ad.age >= this.minAge!);
       }
       if (this.maxAge !== null) {
-        filtered = filtered.filter(
-          (ad) => ad.age !== undefined && ad.age <= this.maxAge!
-        );
+        filtered = filtered.filter(ad => ad.age !== undefined && ad.age <= this.maxAge!);
       }
       // Filter by fecha de publicación
       if (this.minDate) {
-        filtered = filtered.filter(
-          (ad) =>
-            ad.create_at && new Date(ad.create_at) >= new Date(this.minDate)
-        );
+        filtered = filtered.filter(ad => ad.create_at && new Date(ad.create_at) >= new Date(this.minDate));
       }
       if (this.maxDate) {
-        filtered = filtered.filter(
-          (ad) =>
-            ad.create_at && new Date(ad.create_at) <= new Date(this.maxDate)
-        );
+        filtered = filtered.filter(ad => ad.create_at && new Date(ad.create_at) <= new Date(this.maxDate));
       }
 
       // Filter by search term
       if (this.searchTerm.trim() !== '') {
         const term = this.searchTerm.toLowerCase();
-        filtered = filtered.filter(
-          (ad) =>
-            ad.title.toLowerCase().includes(term) ||
-            ad.description.toLowerCase().includes(term) ||
-            (ad.breed && ad.breed.toLowerCase().includes(term)) ||
-            (ad.specie && ad.specie.name.toLowerCase().includes(term))
+        filtered = filtered.filter(ad =>
+          ad.title.toLowerCase().includes(term) ||
+          ad.description.toLowerCase().includes(term) ||
+          (ad.breed && ad.breed.toLowerCase().includes(term)) ||
+          (this.especies.find(esp => esp.id?.toString() === ad.specie?.toString())?.name.toLowerCase().includes(term)) ||
+          (ad.category && ad.category.toLowerCase().includes(term))
         );
       }
 
@@ -377,7 +336,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: queryParams,
-          queryParamsHandling: 'merge',
+          queryParamsHandling: 'merge'
         });
       }
     } catch (e) {
@@ -422,7 +381,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     // Remove query params
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: {},
+      queryParams: {}
     });
   }
 
@@ -441,131 +400,187 @@ export class HomeComponent implements OnInit, AfterViewInit {
       {
         id: 1,
         title: 'Vaca lechera Holstein',
-        description:
-          'Vaca lechera Holstein de 4 años en excelente estado de salud. Produce 30 litros diarios.',
+        description: 'Vaca lechera Holstein de 4 años en excelente estado de salud. Produce 30 litros diarios.',
         price: 1200,
         location: 1,
-        specie: { id: 1, name: 'Vacuno', language: 1 },
-        race: { id: 1, name: 'Holstein', language: 1, specie: 1 },
+        specie: 1,
+        race: 1,
         language: 1,
         birthdate: new Date('2020-05-12'),
         gender: 'Hembra',
         state: true,
         create_at: new Date('2024-03-15'),
-        image: null,
+        category: 'vacuno',
+        breed: 'Holstein',
+        age: 4,
+        province: 'Sevilla',
+        images: ['assets/images/mock/vaca1.jpg', 'assets/images/mock/vaca2.jpg'],
+        sellerId: 1,
+        sellerName: 'Granja El Amanecer',
+        sellerRating: 4.8,
+        favorite: false
       },
       {
         id: 2,
         title: 'Toro Aberdeen Angus de pura raza',
-        description:
-          'Toro Aberdeen Angus de 3 años, excelente genética para reproducción y carne de alta calidad.',
+        description: 'Toro Aberdeen Angus de 3 años, excelente genética para reproducción y carne de alta calidad.',
         price: 2500,
         location: 4,
-        specie: { id: 1, name: 'Vacuno', language: 1 },
-        race: { id: 2, name: 'Aberdeen Angus', language: 1, specie: 1 },
+        specie: 1,
+        race: 2,
         language: 1,
         birthdate: new Date('2021-06-10'),
         gender: 'Macho',
         state: true,
         create_at: new Date('2024-04-05'),
-        image: null,
+        category: 'vacuno',
+        breed: 'Aberdeen Angus',
+        age: 3,
+        province: 'Cádiz',
+        images: ['assets/images/mock/toro1.jpg'],
+        sellerId: 4,
+        sellerName: 'Finca Los Robles',
+        sellerRating: 4.9,
+        favorite: false
       },
       {
         id: 3,
         title: 'Cordero merino de alta calidad',
-        description:
-          'Cordero merino de 8 meses, ideal para reproducción. Lana de excelente calidad.',
+        description: 'Cordero merino de 8 meses, ideal para reproducción. Lana de excelente calidad.',
         price: 350,
         location: 2,
-        specie: { id: 2, name: 'Ovino', language: 1 },
-        race: { id: 2, name: 'Merino', language: 1, specie: 2 },
+        specie: 2,
+        race: 2,
         language: 1,
         birthdate: new Date('2023-10-05'),
         gender: 'Macho',
         state: true,
         create_at: new Date('2024-05-01'),
-        image: null,
+        category: 'ovino',
+        breed: 'Merino',
+        age: 1,
+        province: 'Granada',
+        images: ['assets/images/mock/oveja1.jpg'],
+        sellerId: 2,
+        sellerName: 'Ganadería Hermanos López',
+        sellerRating: 4.5,
+        favorite: false
       },
       {
         id: 4,
         title: 'Oveja Suffolk de calidad premium',
-        description:
-          'Oveja Suffolk de 2 años, excelente para carne y producción lechera.',
+        description: 'Oveja Suffolk de 2 años, excelente para carne y producción lechera.',
         price: 400,
         location: 5,
-        specie: { id: 2, name: 'Ovino', language: 1 },
-        race: { id: 3, name: 'Suffolk', language: 1, specie: 2 },
+        specie: 2,
+        race: 3,
         language: 1,
         birthdate: new Date('2022-03-15'),
         gender: 'Hembra',
         state: true,
         create_at: new Date('2024-04-25'),
-        image: null,
+        category: 'ovino',
+        breed: 'Suffolk',
+        age: 2,
+        province: 'Jaén',
+        images: ['assets/images/mock/oveja2.jpg'],
+        sellerId: 5,
+        sellerName: 'Ovinos del Sur',
+        sellerRating: 4.3,
+        favorite: false
       },
       {
         id: 5,
         title: 'Cabra Murciano-Granadina lechera',
-        description:
-          'Cabra Murciano-Granadina de 3 años con alta producción láctea, ideal para queserías artesanales.',
+        description: 'Cabra Murciano-Granadina de 3 años con alta producción láctea, ideal para queserías artesanales.',
         price: 280,
         location: 6,
-        specie: { id: 3, name: 'Caprino', language: 1 },
-        race: { id: 1, name: 'Murciano-Granadina', language: 1, specie: 3 },
+        specie: 3,
+        race: 1,
         language: 1,
         birthdate: new Date('2021-02-20'),
         gender: 'Hembra',
         state: true,
         create_at: new Date('2024-04-10'),
-        image: null,
+        category: 'caprino',
+        breed: 'Murciano-Granadina',
+        age: 3,
+        province: 'Murcia',
+        images: ['assets/images/mock/cabra1.jpg'],
+        sellerId: 6,
+        sellerName: 'Lácteos Naturales',
+        sellerRating: 4.7,
+        favorite: false
       },
       {
         id: 6,
         title: 'Cerdo Ibérico de bellota',
-        description:
-          'Cerdo Ibérico puro de bellota de 14 meses, criado en dehesa natural.',
+        description: 'Cerdo Ibérico puro de bellota de 14 meses, criado en dehesa natural.',
         price: 650,
         location: 7,
-        specie: { id: 4, name: 'Porcino', language: 1 },
-        race: { id: 1, name: 'Ibérico', language: 1, specie: 4 },
+        specie: 4,
+        race: 1,
         language: 1,
         birthdate: new Date('2023-02-10'),
         gender: 'Macho',
         state: true,
         create_at: new Date('2024-04-15'),
-        image: null,
+        category: 'porcino',
+        breed: 'Ibérico',
+        age: 1,
+        province: 'Salamanca',
+        images: ['assets/images/mock/cerdo1.jpg'],
+        sellerId: 7,
+        sellerName: 'Dehesas Extremeñas',
+        sellerRating: 4.9,
+        favorite: false
       },
       {
         id: 7,
         title: 'Gallinas ponedoras Leghorn',
-        description:
-          'Lote de 5 gallinas ponedoras de raza Leghorn. Producen huevos grandes a diario.',
+        description: 'Lote de 5 gallinas ponedoras de raza Leghorn. Producen huevos grandes a diario.',
         price: 75,
         location: 3,
-        specie: { id: 5, name: 'Avícola', language: 1 },
-        race: { id: 5, name: 'Leghorn', language: 1, specie: 5 },
+        specie: 5,
+        race: 5,
         language: 1,
         birthdate: new Date('2023-01-15'),
         gender: 'Hembra',
         state: true,
         create_at: new Date('2024-04-20'),
-        image: null,
+        category: 'avicola',
+        breed: 'Leghorn',
+        age: 1,
+        province: 'Córdoba',
+        images: ['assets/images/mock/gallina1.jpg', 'assets/images/mock/gallina2.jpg'],
+        sellerId: 3,
+        sellerName: 'Avícola San Pedro',
+        sellerRating: 4.2,
+        favorite: false
       },
       {
         id: 8,
         title: 'Caballo Pura Raza Española',
-        description:
-          'Caballo PRE de 5 años, domado y con excelente morfología. Ideal para doma clásica.',
+        description: 'Caballo PRE de 5 años, domado y con excelente morfología. Ideal para doma clásica.',
         price: 8500,
         location: 8,
-        specie: { id: 6, name: 'Equino', language: 1 },
-        race: { id: 1, name: 'Pura Raza Española', language: 1, specie: 6 },
+        specie: 6,
+        race: 1,
         language: 1,
         birthdate: new Date('2019-07-20'),
         gender: 'Macho',
         state: true,
         create_at: new Date('2024-03-30'),
-        image: null,
-      },
+        category: 'equino',
+        breed: 'Pura Raza Española',
+        age: 5,
+        province: 'Jerez',
+        images: ['assets/images/mock/caballo1.jpg'],
+        sellerId: 8,
+        sellerName: 'Yeguada Real',
+        sellerRating: 5.0,
+        favorite: false
+      }
     ];
 
     this.advertisments = mockAds;
@@ -575,11 +590,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   // Helper methods for the template
   getEspecieName(especieId: string): string {
-    return this.especies.find((e) => e.id === especieId)?.name || '';
+    return this.especies.find(e => e.id === especieId)?.name || '';
   }
 
   getRazaName(razaId: string): string {
-    return this.razas.find((r) => r.id === razaId)?.name || '';
+    return this.razas.find(r => r.id === razaId)?.name || '';
   }
 
   removeEspecie(): void {
@@ -622,9 +637,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     // Activar flag si el valor es mayor que 0
     this.isMinPriceActive = this.minPrice > 0;
-    console.log(
-      `Min slider changed: ${this.minPrice}, active: ${this.isMinPriceActive}`
-    );
+    console.log(`Min slider changed: ${this.minPrice}, active: ${this.isMinPriceActive}`);
 
     // Actualizar el track highlight
     this.updateSliderTrack();
@@ -638,9 +651,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     // Activar/desactivar flag según el valor del slider
     this.isMaxPriceActive = this.maxPrice < this.maxSliderValue;
-    console.log(
-      `Max slider changed: ${this.maxPrice}, active: ${this.isMaxPriceActive}`
-    );
+    console.log(`Max slider changed: ${this.maxPrice}, active: ${this.isMaxPriceActive}`);
 
     // Actualizar el track highlight
     this.updateSliderTrack();
@@ -668,9 +679,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       fill.style.width = `${safeWidth}%`;
 
       // Log for debugging
-      console.log(
-        `Price slider: min=${minValue}, max=${maxValue}, width=${safeWidth}%, left=${safeMinPercent}%`
-      );
+      console.log(`Price slider: min=${minValue}, max=${maxValue}, width=${safeWidth}%, left=${safeMinPercent}%`);
     }
   }
 }

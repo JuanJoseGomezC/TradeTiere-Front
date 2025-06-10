@@ -1,32 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, map } from 'rxjs';
 import { ApiService } from './api.service';
-import { SpecieDto } from './specie.service';
-import { RaceDto } from './race.service';
-
 export interface ImageDto {
   imageBase64: string;
   name: string;
   contentType: string;
 }
-
 export interface AdvertismentDto {
   id?: number;
-  title: string;
-  description: string;
-  price: number;
-  location: number;
-  specie: SpecieDto;
-  race: RaceDto;
-  language: number;
-  birthdate: Date;
-  gender: string;
-  state: boolean;
-  create_at: Date;
-  image?: ImageDto | null;
-}
-
-export interface CreateAdvertismentDto {
   title: string;
   description: string;
   price: number;
@@ -42,7 +23,8 @@ export interface CreateAdvertismentDto {
 }
 
 export interface Advertisment extends AdvertismentDto {
-  // La propiedad 'category' ha sido eliminada
+  // Additional frontend properties
+  category?: 'vacuno' | 'ovino' | 'caprino' | 'porcino' | 'avicola' | 'equino' | 'otros';
   breed?: string;
   age?: number;
   province?: string;
@@ -79,6 +61,7 @@ export interface FormValue {
   imageType: string | null;
 }
 
+
 export interface UpdateAdvertismentDto {
   title?: string;
   description?: string;
@@ -96,18 +79,17 @@ export interface UpdateAdvertismentDto {
 })
 export class AdvertismentService {
   constructor(private apiService: ApiService) {}
-
   /**
-   * Obtener todos los anuncios. El parámetro 'specieName' se usa para filtrar por nombre de especie.
-   */
-  getAdvertisments(specieName?: string): Observable<Advertisment[]> {
+   * Get all advertisments
+   */ getAdvertisments(category?: string): Observable<Advertisment[]> {
     return this.apiService.get<AdvertismentDto[]>('/advertisment').pipe(
       map((ads) => {
+        // Convert API DTOs to frontend model with additional properties
         const enhancedAds = ads.map((ad) => this.enhanceAdvertisment(ad));
 
-        if (specieName) {
-          // Filtrar por el nombre de la especie en lugar de la categoría
-          return enhancedAds.filter((ad) => ad.specie.name === specieName);
+        if (category) {
+          // Filter by category if provided
+          return enhancedAds.filter((ad) => ad.category === category);
         }
         return enhancedAds;
       })
@@ -115,26 +97,24 @@ export class AdvertismentService {
   }
 
   /**
-   * Obtener anuncio por ID
-   */
-  getAdvertismentById(id: number): Observable<Advertisment | undefined> {
+   * Get advertisment by ID
+   */ getAdvertismentById(id: number): Observable<Advertisment | undefined> {
     return this.apiService
       .get<AdvertismentDto>(`/advertisment/${id}`)
       .pipe(map((ad) => this.enhanceAdvertisment(ad)));
   }
 
   /**
-   * Crear un nuevo anuncio
-   */
-  createAdvertisment(data: FormValue): Observable<Advertisment> {
-    const dto = this.mapFormToCreateDto(data);
-    debugger
+   * Create a new advertisment
+   */ createAdvertisment(data: FormValue): Observable<Advertisment> {
+    // Map to the expected format
+    const dto = this.mapFormToDto(data);
     return this.apiService
       .post<AdvertismentDto>('/advertisment', dto)
       .pipe(map((ad) => this.enhanceAdvertisment(ad)));
   }
 
-  private mapFormToCreateDto(data: FormValue): CreateAdvertismentDto {
+  private mapFormToDto(data: FormValue): AdvertismentDto {
     return {
       title: data.title,
       description: data.description,
@@ -158,12 +138,12 @@ export class AdvertismentService {
   }
 
   /**
-   * Actualizar un anuncio existente
-   */
-  updateAdvertisment(
+   * Update an existing advertisment
+   */ updateAdvertisment(
     id: number,
     adData: Partial<Advertisment>
   ): Observable<Advertisment> {
+    // Map to the expected format
     const updateDto: UpdateAdvertismentDto = this.mapToApiFormat(adData);
     return this.apiService
       .put<AdvertismentDto>(`/advertisment/${id}`, updateDto)
@@ -171,91 +151,135 @@ export class AdvertismentService {
   }
 
   /**
-   * Borrar un anuncio
-   */
-  deleteAdvertisment(id: number): Observable<any> {
+   * Delete an advertisment
+   */ deleteAdvertisment(id: number): Observable<any> {
     return this.apiService.delete(`/advertisment/${id}`);
   }
   /**
-   * Obtener los anuncios de un usuario
-   */
-  getUserAdvertisments(email: string): Observable<Advertisment[]> {
+   * Get user's advertisments
+   */ getUserAdvertisments(email: string): Observable<Advertisment[]> {
     return this.apiService
       .get<AdvertismentDto[]>(`/advertisment/email/${email}`)
       .pipe(map((ads) => ads.map((ad) => this.enhanceAdvertisment(ad))));
   }
 
   /**
-   * Actualizar el estado de un anuncio (vendido/activo)
-   */
-  updateAdStatus(
+   * Update advertisment status (sold/active)
+   */ updateAdStatus(
     adId: number,
     status: boolean
   ): Observable<Advertisment | null> {
+    const updateData: UpdateAdvertismentDto = {
+      // In the API, status is represented by the 'state' field
+      // true = active, false = sold
+    };
+
     return this.apiService
       .put<AdvertismentDto>(`/advertisment/${adId}`, { state: status })
       .pipe(map((ad) => this.enhanceAdvertisment(ad)));
   }
 
   /**
-   * Obtener anuncios por ID de especie
+   * Get advertisments by category (species)
    */
-  getAdvertismentsBySpecieId(specieId: number): Observable<Advertisment[]> {
+  getAdvertismentsByCategory(specieId: number): Observable<Advertisment[]> {
     return this.apiService
       .get<AdvertismentDto[]>(`/advertisment/bySpecie/${specieId}`)
       .pipe(map((ads) => ads.map((ad) => this.enhanceAdvertisment(ad))));
   }
 
   /**
-   * Helper para mapear el modelo del frontend al formato de la API para actualizar
+   * Helper method to map frontend model to API format
    */
-  private mapToApiFormat(adData: Partial<Advertisment>): UpdateAdvertismentDto {
+  private mapToApiFormat(adData: Partial<Advertisment>): any {
     return {
       title: adData.title,
       description: adData.description,
       location: adData.location,
-      specie: adData.specie?.id,
-      race: adData.race?.id,
+      specie: adData.specie,
+      race: adData.race,
       birthdate: adData.birthdate,
       language: adData.language,
       gender: adData.gender,
       price: adData.price,
+      state: adData.state !== undefined ? adData.state : true, // Default active
     };
   }
 
-  // La función mapSpecieToCategory ha sido eliminada por completo
+  /**
+   * Helper method to map specie ID to category
+   */
+  private mapSpecieToCategory(
+    specieId: number
+  ):
+    | 'vacuno'
+    | 'ovino'
+    | 'caprino'
+    | 'porcino'
+    | 'avicola'
+    | 'equino'
+    | 'otros'
+    | undefined {
+    // This mapping will need to be updated based on your actual data
+    const specieMap: Record<
+      number,
+      | 'vacuno'
+      | 'ovino'
+      | 'caprino'
+      | 'porcino'
+      | 'avicola'
+      | 'equino'
+      | 'otros'
+    > = {
+      1: 'vacuno',
+      2: 'ovino',
+      3: 'caprino',
+      4: 'porcino',
+      5: 'avicola',
+      6: 'equino',
+      7: 'otros',
+    };
+
+    return specieMap[specieId];
+  }
 
   /**
-   * Enriquece un DTO de anuncio con propiedades específicas del frontend
+   * Enhances an advertisment DTO with frontend-specific properties
    */
   private enhanceAdvertisment(adDto: AdvertismentDto): Advertisment {
+    // Calculate age based on birthdate
     const birthDate = adDto.birthdate ? new Date(adDto.birthdate) : undefined;
     const age = birthDate ? this.calculateAge(birthDate) : undefined;
 
+    // Transform API model to frontend model
     return {
       ...adDto,
-      // La asignación de 'category' ha sido eliminada
+      category: this.mapSpecieToCategory(adDto.specie),
       age: age,
-      favorite: false,
-      province: 'Desconocida',
-      breed: 'Desconocida',
-      images: [],
+      // Add more frontend properties here as needed
+      favorite: false, // Default value, would be set by user preferences
+      // We'd get these from related endpoints in a real app
+      province: 'Desconocida', // would come from location service
+      breed: 'Desconocida', // would come from race service
+      images: [], // would come from files/images service
     };
   }
 
   /**
-   * Calcula la edad en años a partir de la fecha de nacimiento
+   * Calculate age in years from birthdate
    */
   private calculateAge(birthdate: Date): number {
     const today = new Date();
     let age = today.getFullYear() - birthdate.getFullYear();
     const monthDiff = today.getMonth() - birthdate.getMonth();
+
     if (
       monthDiff < 0 ||
       (monthDiff === 0 && today.getDate() < birthdate.getDate())
     ) {
       age--;
     }
+
     return age;
   }
 }

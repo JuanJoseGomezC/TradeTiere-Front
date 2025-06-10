@@ -189,7 +189,7 @@ export class CreateAdModalComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.adForm.invalid) {
+    if (this.adForm.invalid || !this.imagePreview) {
       this.adForm.markAllAsTouched();
       return;
     }
@@ -197,64 +197,38 @@ export class CreateAdModalComponent implements OnInit {
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    const formData = this.adForm.value;
-    const currentDate = new Date().toISOString().split('T')[0];
+    const file = this.imagePreview.file;
+    const reader = new FileReader();
 
-    debugger
-    // Si hay imagen
-    if (this.imagePreview?.file) {
-      const file = this.imagePreview.file;
-      const reader = new FileReader();
+    reader.onload = () => {
+      const base64String = (reader.result as string).split(',')[1];
 
-      reader.onload = () => {
-        const base64String = (reader.result as string).split(',')[1];
-
-        const dto = {
-          ...formData,
-          image: {
-            imageBase64: base64String,
-            name: file.name,
-            contentType: file.type,
-          },
-          state: true,
-          create_at: currentDate,
-        };
-
-        this.submitAdvertisment(dto);
-      };
-
-      reader.readAsDataURL(file);
-    } else {
-      // Sin imagen
       const dto = {
-        ...formData,
+        ...this.adForm.value,
         image: {
-          imageBase64: null,
-          name: null,
-          contentType: null,
+          imageBase64: base64String,
+          name: file.name,
+          contentType: file.type,
         },
         state: true,
-        create_at: currentDate,
+        create_at: new Date().toISOString().split('T')[0],
       };
 
-      this.submitAdvertisment(dto);
-    }
-  }
+      this.advertismentService.createAdvertisment(dto).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.close();
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          this.errorMessage = 'Error al publicar el anuncio.';
+          console.error(err);
+        },
+      });
+    };
 
-  private submitAdvertisment(dto: any): void {
-    this.advertismentService.createAdvertisment(dto).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.close();
-      },
-      error: (err) => {
-        this.isSubmitting = false;
-        this.errorMessage = 'Error al publicar el anuncio.';
-        console.error(err);
-      },
-    });
+    reader.readAsDataURL(file);
   }
-
 
   private convertFileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -282,7 +256,7 @@ export class CreateAdModalComponent implements OnInit {
     });
   }
   private loadSpecies(): void {
-    this.specieService.getAll().subscribe({
+    this.specieService.getAllEnhanced().subscribe({
       next: (species) => {
         this.species = species.filter(
           (s) => s.language === this.defaultLanguageId
