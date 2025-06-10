@@ -7,7 +7,7 @@ import { Advertisment, AdvertismentService } from '../../services/advertisment.s
   selector: 'app-advertisment',
   imports: [CommonModule, RouterModule],
   templateUrl: './advertisment.component.html',
-  styleUrl: './advertisment.component.css'
+  styleUrl: './advertisment.component.css',
 })
 export class AdvertismentComponent implements OnInit {
   advertisment: Advertisment | null = null;
@@ -16,36 +16,34 @@ export class AdvertismentComponent implements OnInit {
   currentImageIndex = 0;
 
   // Mock data for development
-  mockAd: Advertisment = {
+  mockAdDto: Advertisment = {
     id: 1,
     title: 'Golden Retriever Cachorro - Pedigree Completo',
-    description: 'Hermoso cachorro Golden Retriever de 3 meses con pedigree completo. Vacunado, desparasitado y socializado. Los padres son campeones de exposición. Ideal para familias con niños. Muy juguetón y cariñoso.',
+    description:
+      'Hermoso cachorro Golden Retriever de 3 meses con pedigree completo. Vacunado, desparasitado y socializado. Los padres son campeones de exposición. Ideal para familias con niños. Muy juguetón y cariñoso.',
     price: 1200,
     location: 1,
-    specie: 1,
-    race: 1,
+    specie: {
+      id: 1,
+      name: 'Perro',
+      language: 1,
+    },
+    race: {
+      id: 1,
+      name: 'Golden Retriever',
+      specie: 1,
+      language: 1,
+    },
     language: 1,
     birthdate: new Date('2024-01-15'),
     gender: 'Macho',
     state: true,
     create_at: new Date('2024-01-15'),
-    // Frontend properties
-    category: 'otros',
-    breed: 'Golden Retriever',
-    age: 3,
-    province: 'Madrid',
-    images: [
-      'https://images.unsplash.com/photo-1552053831-71594a27632d?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1551717743-49959800b1f6?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=800&h=600&fit=crop'
-    ],
-    sellerId: 1,
-    sellerName: 'Carlos García',
-    sellerRating: 4.8,
-    sellerJoinDate: new Date('2023-05-10'),
-    views: 145,
-    favorite: false
+    image: {
+      imageBase64: '',
+      name: 'golden1.jpg',
+      contentType: 'image/jpeg',
+    },
   };
 
   relatedAds: Advertisment[] = [
@@ -53,26 +51,32 @@ export class AdvertismentComponent implements OnInit {
       id: 2,
       title: 'Labrador Retriever Adulto',
       price: 800,
-      images: ['https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=300&h=200&fit=crop'],
+      images: [
+        'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=300&h=200&fit=crop',
+      ],
       province: 'Barcelona',
-      age: 24
+      age: 24,
     } as Advertisment,
     {
       id: 3,
       title: 'Golden Retriever Hembra',
       price: 1000,
-      images: ['https://images.unsplash.com/photo-1552053831-71594a27632d?w=300&h=200&fit=crop'],
+      images: [
+        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=300&h=200&fit=crop',
+      ],
       province: 'Valencia',
-      age: 6
+      age: 6,
     } as Advertisment,
     {
       id: 4,
       title: 'Cachorro Pastor Alemán',
       price: 900,
-      images: ['https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=300&h=200&fit=crop'],
+      images: [
+        'https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=300&h=200&fit=crop',
+      ],
       province: 'Sevilla',
-      age: 4
-    } as Advertisment
+      age: 4,
+    } as Advertisment,
   ];
 
   features = [
@@ -82,7 +86,7 @@ export class AdvertismentComponent implements OnInit {
     'Microchip implantado',
     'Socializado con niños',
     'Entrenamiento básico',
-    'Certificado veterinario'
+    'Certificado veterinario',
   ];
 
   constructor(
@@ -98,28 +102,40 @@ export class AdvertismentComponent implements OnInit {
   loadAdvertisment() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      // For now, use mock data
-      setTimeout(() => {
-        this.advertisment = this.mockAd;
-        this.loading = false;
-      }, 500);
-
-      // In real app, you would call:
-      // this.advertismentService.getAdvertismentById(parseInt(id)).subscribe({
-      //   next: (ad) => {
-      //     this.advertisment = ad;
-      //     this.loading = false;
-      //   },
-      //   error: () => {
-      //     this.error = true;
-      //     this.loading = false;
-      //   }
-      // });
+      this.advertismentService.getAdvertismentById(parseInt(id)).subscribe({
+        next: (ad) => {
+          if (ad) {
+            this.advertisment = ad;
+            // Añadir imagen por defecto si no hay imágenes
+            if (
+              !this.advertisment.images ||
+              this.advertisment.images.length === 0
+            ) {
+              this.advertisment.images = [
+                'https://via.placeholder.com/800x600?text=Sin+Imagen',
+              ];
+            }
+          } else {
+            this.error = true;
+          }
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = true;
+          this.loading = false;
+        },
+      });
+    } else {
+      this.error = true;
+      this.loading = false;
     }
   }
 
   nextImage() {
-    if (this.advertisment?.images && this.currentImageIndex < this.advertisment.images.length - 1) {
+    if (
+      this.advertisment?.images &&
+      this.currentImageIndex < this.advertisment.images.length - 1
+    ) {
       this.currentImageIndex++;
     }
   }
@@ -176,7 +192,7 @@ export class AdvertismentComponent implements OnInit {
       navigator.share({
         title: this.advertisment?.title,
         text: this.advertisment?.description,
-        url: window.location.href
+        url: window.location.href,
       });
     } else {
       // Fallback: copiar URL al portapapeles
@@ -195,12 +211,23 @@ export class AdvertismentComponent implements OnInit {
   }
 
   getAge(): string {
-    if (this.advertisment?.age) {
-      return this.advertisment.age === 1 ? '1 mes' : `${this.advertisment.age} meses`;
+    if (this.advertisment?.birthdate) {
+      return this.calculateAge(new Date(this.advertisment?.birthdate));
     }
     return 'No especificada';
   }
-
+  private calculateAge(birthdate: Date): string {
+    const today = new Date();
+    let years = today.getFullYear() - birthdate.getFullYear();
+    let months = today.getMonth() - birthdate.getMonth();
+    if (months < 0 || (months === 0 && today.getDate() < birthdate.getDate())) {
+      years--;
+      months = (months + 12) % 12;
+    }
+    if (years > 0) return `${years} ${years === 1 ? 'año' : 'años'}`;
+    if (months > 0) return `${months} ${months === 1 ? 'mes' : 'meses'}`;
+    return 'Recién nacido';
+  }
   formatPrice(): string {
     return this.advertisment?.price?.toLocaleString('es-ES') + ' €' || '0 €';
   }
