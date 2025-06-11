@@ -142,7 +142,8 @@
             <div class="ads-list">
               @for (ad of userAds; track ad.id) {
                 <div class="ad-card" [class.sold]="ad.status === 'sold'">                  <div class="ad-image">
-                    <img [src]="ad.thumbnailUrl" [alt]="'Imagen de ' + ad.title" [title]="'Imagen de ' + ad.title" alt="Imagen del anuncio" title="Imagen del anuncio">
+                    <img [src]="'data:' + ad.image?.contentType + ';base64,' + ad.image?.imageBase64"
+                    [alt]="'Imagen de ' + ad.title" [title]="'Imagen de ' + ad.title" alt="Imagen del anuncio" title="Imagen del anuncio">
                     @if (ad.status === 'sold') {
                       <span class="status-badge sold">Vendido</span>
                     } @else {
@@ -196,7 +197,8 @@
             <div class="favorites-list">
               @for (ad of favoriteAds; track ad.id) {
                 <div class="favorite-card">                  <div class="favorite-image">
-                    <img [src]="ad.thumbnailUrl" [alt]="'Imagen de ' + ad.title" [title]="'Imagen de ' + ad.title" alt="Imagen del anuncio favorito" title="Imagen del anuncio favorito">
+                  <img [src]="'data:' + ad.image?.contentType + ';base64,' + ad.image?.imageBase64"
+                  [alt]="'Imagen de ' + ad.title" [title]="'Imagen de ' + ad.title" alt="Imagen del anuncio favorito" title="Imagen del anuncio favorito">
                   </div>
                   <div class="favorite-details">
                     <h3><a [routerLink]="['/advertisment', ad.id]">{{ ad.title }}</a></h3>

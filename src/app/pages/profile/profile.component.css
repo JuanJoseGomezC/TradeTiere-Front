@@ -89,7 +89,7 @@
 .avatar img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .user-details h1 {
@@ -400,7 +400,8 @@
 .ad-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: #5555552c;
 }
 
 .status-badge {
@@ -559,7 +560,7 @@
 .favorite-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .favorite-details h3 {

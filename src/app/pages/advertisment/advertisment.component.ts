@@ -186,7 +186,8 @@ export class AdvertismentComponent implements OnInit {
             sellerName: this.advertisment.sellerName || '',
             // Guardar localización y fecha explícitamente
             locationFull: this.advertisment.location,
-            createAt: this.advertisment.create_at
+            createAt: this.advertisment.create_at,
+            image: this.advertisment?.image || null
           });
         }
       } else {

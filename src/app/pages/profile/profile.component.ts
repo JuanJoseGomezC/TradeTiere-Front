@@ -7,7 +7,7 @@ import { AuthService, User } from '../../services/auth.service';
 import { HttpClientModule } from '@angular/common/http';
 import { catchError, switchMap, tap, of } from 'rxjs';
 import { CreateAdModalComponent } from "../../components/create-ad-modal/create-ad-modal.component";
-import { AdvertismentService } from '../../services/advertisment.service';
+import { AdvertismentService, ImageDto } from '../../services/advertisment.service';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -24,6 +24,7 @@ interface UserAd {
   thumbnailUrl: string;
   views: number;
   favorites: number;
+  image: ImageDto | null;
 }
 
 interface FavoriteAd {
@@ -34,6 +35,7 @@ interface FavoriteAd {
   publishedDate: Date;
   thumbnailUrl: string;
   sellerName: string;
+  image: ImageDto | null;
 }
 
 @Component({
@@ -148,7 +150,8 @@ export class ProfileComponent implements OnInit {
             status: ad.state ? 'active' : 'sold',
             thumbnailUrl: ad.image?.imageBase64 || 'assets/images/default-ad.png',
             views: ad.views || 0,
-            favorites: 0 // TODO: Add when favorites API is available
+            favorites: 0,
+            image: ad?.image || null
           }));
         },
         (error) => {

@@ -128,14 +128,12 @@ export class AdvertismentService {
    */
   createAdvertisment(data: FormValue): Observable<Advertisment> {
     const dto = this.mapFormToCreateDto(data);
-debugger
     return this.apiService
       .post<AdvertismentDto>('/advertisment', dto)
       .pipe(map((ad) => this.enhanceAdvertisment(ad)));
   }
 
   private mapFormToCreateDto(data: FormValue): CreateAdvertismentDto {
-    debugger
     // Buscar el objeto LocationDto completo según el id seleccionado
     let locationObj: LocationDto | undefined = undefined;
     if (typeof data.location === 'object' && data.location !== null && 'id' in data.location) {
