@@ -10,11 +10,12 @@ export interface User {
   name: string;
   lastname: string;
   mail: string;
-  birthday?: Date;
+  birthday?: string; // yyyy-MM-dd
   createAt?: Date;
   phone?: string;
   profileImage?: string;
   joinDate?: Date;
+  password?: string;
 }
 
 export interface LoginResponse {
@@ -260,7 +261,7 @@ export class AuthService {
     const updateData = {
       name: userData.name,
       lastname: userData.lastname,
-      birthday: userData.birthday ? userData.birthday.toISOString() : undefined,
+      birthday: userData.birthday, // Already string yyyy-MM-dd
       password: (userData as any).password // Include password if it's being changed
     };
 

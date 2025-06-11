@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ProfileService, UserProfile } from '../../services/profile.service';
+import { ProfileService, UpdateProfileDto, UserProfile } from '../../services/profile.service';
 import { AuthService, User } from '../../services/auth.service';
 import { HttpClientModule } from '@angular/common/http';
 import { catchError, switchMap, tap, of } from 'rxjs';
@@ -12,6 +12,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule } from '@angular/material/core';
+import Swal from 'sweetalert2';
 
 interface UserAd {
   id: number;
@@ -53,6 +54,19 @@ export class ProfileComponent implements OnInit {
   messageCount = 5;
   loadingError: string | null = null;
   showCreateAdModal = false;
+
+  // Password change variables
+  newPassword: string = '';
+  confirmPassword: string = '';
+  passwordError: string = '';
+  passwordSuccess: string = '';
+  isChangingPassword: boolean = false;
+
+  // Delete account variables
+  showDeleteConfirm = false;
+  deleteConfirmText = '';
+  isDeletingUser = false;
+  deleteError: string = '';
 
   constructor(
     private profileService: ProfileService,
@@ -181,42 +195,73 @@ export class ProfileComponent implements OnInit {
 
   saveProfile(): void {
     if (this.editableProfile && this.editableProfile.id) {
-      // Validar antes de guardar (sin validar contraseña en edición de perfil)
       const validationError = this.validateRegisterFields({
         mail: this.editableProfile.mail || '',
-        birthdate: this.editableProfile.birthday ? this.editableProfile.birthday : '',
+        birthdate: this.editableProfile.birthday || '',
         password: ''
       }, false);
       if (validationError) {
-        // alert(validationError);
         return;
       }
-
       this.isLoading = true;
-      // Solo enviar los campos editables: name, lastname, birthday (como Date)
-      const updateData = {
+      let updateData: any = {
         name: this.editableProfile.name,
-        lastname: this.editableProfile.lastname,
-        birthday: this.editableProfile.birthday ? new Date(this.editableProfile.birthday) : undefined
+        lastname: this.editableProfile.lastname
       };
-      this.profileService.updateProfile(updateData).subscribe(
+      if (this.editableProfile.birthday) {
+        updateData.birthday = this.editableProfile.birthday;
+      }
+      this.profileService.updateProfile(updateData as any).subscribe(
         (updatedProfile) => {
-          // Actualizar solo los campos editados, manteniendo el id y tipos
           if (this.profile) {
-            this.profile = { ...this.profile, ...updateData };
+            // Mantener el id original y forzar el tipo correcto
+            const id = this.profile.id;
+            this.profile = { ...this.profile, ...updateData, id } as UserProfile;
             this.editableProfile = { ...this.profile };
           }
           this.isEditing = false;
           this.isLoading = false;
-          // alert('Perfil actualizado con éxito');
         },
         (error) => {
           console.error('Error updating profile:', error);
           this.isLoading = false;
-          // alert('Error al actualizar el perfil');
         }
       );
     }
+  }
+
+  onChangePassword(): void {
+    this.passwordError = '';
+    this.passwordSuccess = '';
+    if (!this.newPassword || !this.confirmPassword) {
+      this.passwordError = 'Todos los campos son obligatorios.';
+      return;
+    }
+    if (this.newPassword.length < 8) {
+      this.passwordError = 'La nueva contraseña debe tener al menos 8 caracteres.';
+      return;
+    }
+    if (this.newPassword !== this.confirmPassword) {
+      this.passwordError = 'Las contraseñas no coinciden.';
+      return;
+    }
+    this.isChangingPassword = true;
+    // Llamar al mismo endpoint que saveProfile, enviando solo password
+    const updateData: UpdateProfileDto = {
+      password: this.newPassword
+    };
+    this.profileService.updateProfile(updateData).subscribe({
+      next: () => {
+        this.passwordSuccess = 'Contraseña actualizada correctamente.';
+        this.newPassword = '';
+        this.confirmPassword = '';
+        this.isChangingPassword = false;
+      },
+      error: (err) => {
+        this.passwordError = err.message || 'Error al actualizar la contraseña.';
+        this.isChangingPassword = false;
+      }
+    });
   }
 
   // Formatea la fecha a yyyy-MM-dd
@@ -273,6 +318,44 @@ export class ProfileComponent implements OnInit {
           alert('Error al eliminar el anuncio');
         }
       );
+    }
+  }
+
+  async deleteAccount(): Promise<void> {
+    if (!this.profile?.mail) return;
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción eliminará tu cuenta y todos tus datos. Escribe CONFIRMAR para continuar.',
+      input: 'text',
+      inputPlaceholder: 'CONFIRMAR',
+      inputValidator: (value) => {
+        if (value !== 'CONFIRMAR') {
+          return 'Debes escribir CONFIRMAR para eliminar tu cuenta.';
+        }
+        return null;
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Eliminar',
+      confirmButtonColor: '#d33',
+      cancelButtonText: 'Cancelar',
+      icon: 'warning',
+      preConfirm: (value) => value === 'CONFIRMAR'
+    });
+    if (result.isConfirmed && result.value) {
+      this.isDeletingUser = true;
+      this.deleteError = '';
+      this.profileService.deleteUserByMail(this.profile.mail).subscribe({
+        next: () => {
+          this.isDeletingUser = false;
+          Swal.fire('Cuenta eliminada', 'Tu cuenta ha sido eliminada correctamente.', 'success').then(() => {
+            this.authService.logout();
+          });
+        },
+        error: (err) => {
+          this.isDeletingUser = false;
+          Swal.fire('Error', err?.message || 'Error al eliminar la cuenta.', 'error');
+        }
+      });
     }
   }
 

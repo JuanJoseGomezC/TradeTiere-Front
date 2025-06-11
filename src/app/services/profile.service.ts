@@ -4,7 +4,8 @@ import { delay, catchError, tap, map } from 'rxjs/operators';
 import { User } from './auth.service';
 import { ApiService } from './api.service';
 
-export interface UserProfile extends User {
+export interface UserProfile extends Omit<User, 'birthday'> {
+  birthday?: string; // yyyy-MM-dd
   address?: string;
   province?: string;
   about?: string;
@@ -21,12 +22,12 @@ export interface UpdateProfileDto {
   name?: string;
   lastname?: string;
   birthday?: string;
-  phone?: string;
   profileImage?: string;
   address?: string;
   province?: string;
   about?: string;
   website?: string;
+  password?: string;
 }
 
 @Injectable({
@@ -73,5 +74,8 @@ export class ProfileService {
    */
   getUserMessages(userId: number): Observable<any[]> {
     return this.apiService.get<any[]>(`/user/${userId}/messages`);
+  }
+  deleteUserByMail(mail: string): Observable<void> {
+    return this.apiService.delete<void>(`/user/deleteUser/${mail}`);
   }
 }
