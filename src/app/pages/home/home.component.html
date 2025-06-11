@@ -184,19 +184,19 @@
                   </h3>
                   <p class="ad-price">{{ ad.price | currency:'EUR':'symbol':'1.0-0' }}</p>
                   <p class="ad-location">
-                    <i class="fas fa-map-marker-alt"></i> {{ ad.province || 'Localización no especificada' }}
+                    <i class="fas fa-map-marker-alt"></i> {{ ad.location && ad.location.name ? ad.location.name : 'Localización no especificada' }}
                   </p>
                   <p class="ad-date">
                     <i class="fas fa-calendar-alt"></i> {{ ad.create_at | date:'dd/MM/yyyy' }}
                   </p>
                   <span *ngIf="ad.age !== undefined && ad.age !== null" class="ad-age">
                     <span class="ad-age-label">Edad:</span>
-                    <ng-container *ngIf="ad.age >= 12; else meses">
-                      {{ (ad.age / 12) | number:'1.0-0' }} años
+                    <ng-container *ngIf="ad.age === 0">
+                      Recién nacido
                     </ng-container>
-                    <ng-template #meses>
-                      {{ ad.age }} {{ ad.age === 1 ? 'mes' : 'meses' }}
-                    </ng-template>
+                    <ng-container *ngIf="ad.age > 0">
+                      {{ ad.age }} año{{ ad.age === 1 ? '' : 's' }}
+                    </ng-container>
                   </span>
                 </div>            <div class="ad-actions">
                   <button

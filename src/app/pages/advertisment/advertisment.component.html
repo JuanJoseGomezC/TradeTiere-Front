@@ -82,10 +82,22 @@
       <section class="ad-details">
         <header class="ad-header">
           <h1>{{ advertisment.title }}</h1>
+          <div class="ad-seller">
+            <i class="fas fa-user" aria-hidden="true"></i>
+            <span>
+              {{ advertisment.sellerName ? advertisment.sellerName : 'Anunciante desconocido' }}
+            </span>
+          </div>
           <div class="ad-price">{{ formatPrice() }}</div>
           <div class="ad-location">
             <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-            <span>{{ advertisment.province }}</span>
+            <span>{{ advertisment.location && advertisment.location.name ? advertisment.location.name : 'Localización no especificada' }}</span>
+          </div>
+          <div class="ad-date">
+            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+            <span>
+              {{ advertisment.create_at | date:'dd/MM/yyyy' }}
+            </span>
           </div>
         </header>
 
@@ -119,17 +131,6 @@
           <p>{{ advertisment.description }}</p>
         </div>
 
-        <!-- Features -->
-        <div class="animal-features">
-          <h3>Características adicionales</h3>
-          <ul class="features-list">
-            <li *ngFor="let feature of features">
-              <i class="fas fa-check" aria-hidden="true"></i>
-              {{ feature }}
-            </li>
-          </ul>
-        </div>
-
         <!-- Action Buttons -->
         <div class="ad-actions">          <button type="button" class="action-button contact" (click)="contactSeller()" aria-label="Contactar con vendedor">
             <i class="fas fa-comment"></i> Contactar
@@ -152,7 +153,8 @@
     <aside class="ad-sidebar">
       <!-- Seller Information -->
       <section class="seller-info">
-        <h3>Información del vendedor</h3>        <div class="seller-profile">
+        <h3>Información del vendedor</h3>
+        <div class="seller-profile">
           <img
             [src]="'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'"
             [alt]="'Avatar de ' + advertisment.sellerName"
@@ -160,7 +162,7 @@
             class="seller-avatar"
           >
           <div class="seller-details">
-            <div class="seller-name">{{ advertisment.sellerName }}</div>
+            <div class="seller-name"><b>Nombre:</b> {{ advertisment.sellerName }}</div>
             <div class="seller-rating" *ngIf="advertisment.sellerRating">
               <div class="stars">
                 <i *ngFor="let star of [1,2,3,4,5]"
@@ -173,9 +175,11 @@
             <div class="seller-join-date" *ngIf="advertisment.sellerJoinDate">
               Miembro desde {{ advertisment.sellerJoinDate | date:'MMM yyyy' }}
             </div>
+            <button class="profile-button" (click)="goToSellerProfile()">
+              <i class="fas fa-user"></i> Ver perfil del vendedor
+            </button>
           </div>
         </div>
-
         <div class="seller-contact">
           <button class="contact-button primary" (click)="contactSeller()">
             <i class="fas fa-envelope"></i>

@@ -1,0 +1,37 @@
+<div class="public-profile-container">
+  <div class="profile-header">
+    <img [src]="userProfileImage" alt="Avatar del usuario" class="profile-avatar">
+    <div class="profile-info">
+      <h2>{{ userName }}</h2>
+      <p *ngIf="userJoinDate">Miembro desde {{ userJoinDate }}</p>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <i class="fas fa-spinner fa-spin"></i> Cargando anuncios...
+  </div>
+  <div *ngIf="error" class="error">
+    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error">
+    <h3>Anuncios publicados</h3>
+    <div *ngIf="ads.length === 0" class="no-ads">
+      <p>Este usuario no tiene anuncios publicados.</p>
+    </div>
+    <div class="ads-grid" *ngIf="ads.length > 0">
+      <div class="ad-card" *ngFor="let ad of ads">
+        <div class="ad-image">
+          <img [src]="ad.images && ad.images.length > 0 ? ad.images[0] : 'https://via.placeholder.com/400x300?text=Sin+Imagen'" [alt]="ad.title">
+        </div>
+        <div class="ad-details">
+          <h4>{{ ad.title }}</h4>
+          <p class="ad-price">{{ ad.price | currency:'EUR':'symbol':'1.0-0' }}</p>
+          <p class="ad-location"><i class="fas fa-map-marker-alt"></i> {{ ad.location && ad.location.name ? ad.location.name : ad.province }}</p>
+          <p class="ad-date"><i class="fas fa-calendar-alt"></i> {{ ad.create_at | date:'dd/MM/yyyy' }}</p>
+          <button class="view-ad" *ngIf="ad.id !== undefined" (click)="viewAd(ad.id)">Ver anuncio</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

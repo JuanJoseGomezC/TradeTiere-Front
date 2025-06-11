@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Advertisment, AdvertismentService } from '../../services/advertisment.service';
+import { UserService } from '../../services/user.service';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-advertisment',
@@ -16,35 +18,35 @@ export class AdvertismentComponent implements OnInit {
   currentImageIndex = 0;
 
   // Mock data for development
-  mockAdDto: Advertisment = {
-    id: 1,
-    title: 'Golden Retriever Cachorro - Pedigree Completo',
-    description:
-      'Hermoso cachorro Golden Retriever de 3 meses con pedigree completo. Vacunado, desparasitado y socializado. Los padres son campeones de exposición. Ideal para familias con niños. Muy juguetón y cariñoso.',
-    price: 1200,
-    location: 1,
-    specie: {
-      id: 1,
-      name: 'Perro',
-      language: 1,
-    },
-    race: {
-      id: 1,
-      name: 'Golden Retriever',
-      specie: 1,
-      language: 1,
-    },
-    language: 1,
-    birthdate: new Date('2024-01-15'),
-    gender: 'Macho',
-    state: true,
-    create_at: new Date('2024-01-15'),
-    image: {
-      imageBase64: '',
-      name: 'golden1.jpg',
-      contentType: 'image/jpeg',
-    },
-  };
+  // mockAdDto: Advertisment = {
+  //   id: 1,
+  //   title: 'Golden Retriever Cachorro - Pedigree Completo',
+  //   description:
+  //     'Hermoso cachorro Golden Retriever de 3 meses con pedigree completo. Vacunado, desparasitado y socializado. Los padres son campeones de exposición. Ideal para familias con niños. Muy juguetón y cariñoso.',
+  //   price: 1200,
+  //   location: 1,
+  //   specie: {
+  //     id: 1,
+  //     name: 'Perro',
+  //     language: 1,
+  //   },
+  //   race: {
+  //     id: 1,
+  //     name: 'Golden Retriever',
+  //     specie: 1,
+  //     language: 1,
+  //   },
+  //   language: 1,
+  //   birthdate: new Date('2024-01-15'),
+  //   gender: 'Macho',
+  //   state: true,
+  //   create_at: new Date('2024-01-15'),
+  //   image: {
+  //     imageBase64: '',
+  //     name: 'golden1.jpg',
+  //     contentType: 'image/jpeg',
+  //   },
+  // };
 
   relatedAds: Advertisment[] = [
     {
@@ -92,7 +94,8 @@ export class AdvertismentComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private advertismentService: AdvertismentService
+    private advertismentService: AdvertismentService,
+    private userService: UserService
   ) {}
 
   ngOnInit() {
@@ -107,13 +110,24 @@ export class AdvertismentComponent implements OnInit {
           if (ad) {
             this.advertisment = ad;
             // Añadir imagen por defecto si no hay imágenes
-            if (
-              !this.advertisment.images ||
-              this.advertisment.images.length === 0
-            ) {
+            if (!this.advertisment.images || this.advertisment.images.length === 0) {
               this.advertisment.images = [
                 'https://via.placeholder.com/800x600?text=Sin+Imagen',
               ];
+            }
+            // Obtener nombre y apellido del vendedor
+            if (ad.userId) {
+              this.userService.getUserEnhanced(ad.userId).pipe(
+                catchError(() => of({ fullName: 'Anunciante desconocido' }))
+              ).subscribe(user => {
+                if (this.advertisment) {
+                  this.advertisment.sellerName = user.fullName || 'Anunciante desconocido';
+                }
+              });
+            } else {
+              if (this.advertisment) {
+                this.advertisment.sellerName = 'Anunciante desconocido';
+              }
             }
           } else {
             this.error = true;
@@ -163,15 +177,17 @@ export class AdvertismentComponent implements OnInit {
       if (this.advertisment.favorite) {
         // Añadir si no existe
         if (!favorites.some(ad => ad.id === this.advertisment!.id)) {
-          // Guardar solo los campos necesarios para mostrar en perfil
           favorites.push({
             id: this.advertisment.id,
             title: this.advertisment.title,
             price: this.advertisment.price,
-            location: this.advertisment.province || '',
+            location: this.advertisment.location && this.advertisment.location.name ? this.advertisment.location.name : '',
             publishedDate: this.advertisment.create_at,
             thumbnailUrl: this.advertisment.images?.[0] || '',
-            sellerName: this.advertisment.sellerName || ''
+            sellerName: this.advertisment.sellerName || '',
+            // Guardar localización y fecha explícitamente
+            locationFull: this.advertisment.location,
+            createAt: this.advertisment.create_at
           });
         }
       } else {
@@ -230,5 +246,14 @@ export class AdvertismentComponent implements OnInit {
   }
   formatPrice(): string {
     return this.advertisment?.price?.toLocaleString('es-ES') + ' €' || '0 €';
+  }
+
+  goToSellerProfile() {
+    // Navega al perfil público del vendedor usando su sellerId
+    if (this.advertisment && this.advertisment.sellerId) {
+      this.router.navigate(['/public-profile', this.advertisment.sellerId]);
+    } else {
+      alert('No se puede acceder al perfil del vendedor.');
+    }
   }
 }

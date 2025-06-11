@@ -24,6 +24,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { AdvertismentService } from '../../services/advertisment.service';
 import { SpecieService, RaceService, SpecieDto, RaceDto, LocationDto, LocationService } from '../../services';
+import { FormValue, CreateAdvertismentDto } from '../../services/advertisment.service';
 
 // Interfaces para tipado fuerte
 interface Specie {
@@ -189,7 +190,7 @@ export class CreateAdModalComponent implements OnInit {
   }
 
   onSubmit(): void {
-    debugger
+
     if (this.adForm.invalid) {
       this.adForm.markAllAsTouched();
       return;
@@ -201,7 +202,7 @@ export class CreateAdModalComponent implements OnInit {
     const formData = this.adForm.value;
     const currentDate = new Date().toISOString().split('T')[0];
 
-    debugger
+
     // Si hay imagen
     if (this.imagePreview?.file) {
       const file = this.imagePreview.file;
@@ -315,5 +316,35 @@ export class CreateAdModalComponent implements OnInit {
     if (years > 0) return `${years} ${years === 1 ? 'año' : 'años'}`;
     if (months > 0) return `${months} ${months === 1 ? 'mes' : 'meses'}`;
     return 'Recién nacido';
+  }
+
+  private mapFormToCreateDto(data: FormValue): CreateAdvertismentDto {
+    let locationObj: LocationDto;
+    if (typeof data.location === 'object' && data.location !== null && 'id' in data.location) {
+      locationObj = data.location as LocationDto;
+    } else {
+      // Fallback: crear un objeto mínimo si solo se tiene el id
+      locationObj = { id: Number(data.location), name: '', language: 1 };
+    }
+    return {
+      title: data.title,
+      description: data.description,
+      price: data.price,
+      location: locationObj, // Enviar el objeto completo
+      specie: data.specie,
+      race: data.race,
+      language: Number(data.language),
+      birthdate: new Date(data.birthdate),
+      gender: data.gender,
+      state: true,
+      create_at: new Date(),
+      image: data.imageBase64
+        ? {
+            imageBase64: data.imageBase64,
+            name: data.imageName || '',
+            contentType: data.imageType || '',
+          }
+        : undefined,
+    };
   }
 }

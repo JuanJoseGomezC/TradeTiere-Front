@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProfileService, UpdateProfileDto, UserProfile } from '../../services/profile.service';
 import { AuthService, User } from '../../services/auth.service';
@@ -72,57 +72,65 @@ export class ProfileComponent implements OnInit {
     private profileService: ProfileService,
     private authService: AuthService,
     private advertismentService: AdvertismentService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.isLoading = true;
     this.loadingError = null;
 
-    // Verificar estado de autenticación
-    if (!this.authService.isLoggedIn) {
-      console.log('ProfileComponent: Usuario no autenticado, redirigiendo a login');
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    // Intentar refrescar los datos del usuario primero
-    this.authService.refreshUserData().pipe(
-      catchError(error => {
-        console.error('ProfileComponent: Error al actualizar datos del usuario:', error);
-        // Aun con error, intentar usar los datos almacenados en cache
-        return of(this.authService.getCurrentUser());
-      }),
-      switchMap(user => {
-        // Get current user después de refresh
-        const currentUser = user || this.authService.getCurrentUser();
-
-        if (!currentUser || !currentUser.id) {
-          console.error('ProfileComponent: No hay usuario autenticado después de refresh');
-          this.loadingError = 'No se pudo cargar el perfil. Por favor, inicia sesión nuevamente.';
+    // Si hay un parámetro :id en la ruta, cargar ese perfil, si no el del usuario autenticado
+    const routeId = this.route.snapshot.paramMap.get('id');
+    if (routeId) {
+      // Perfil público de otro usuario
+      const userId = parseInt(routeId, 10);
+      this.profileService.getProfile(userId).subscribe({
+        next: (profile) => {
+          this.profile = profile;
+          this.editableProfile = { ...profile };
+          this.loadUserAds();
           this.isLoading = false;
-          return of(null);
+        },
+        error: (error) => {
+          this.loadingError = 'No se pudo cargar el perfil del usuario.';
+          this.isLoading = false;
         }
-
-        console.log('ProfileComponent: Cargando perfil con ID:', currentUser.id);
-        return this.profileService.getProfile(currentUser.id).pipe(
-          tap(profile => {
-            this.profile = profile;
-            this.editableProfile = { ...profile };
-            this.loadUserAds();
-            this.loadFavoriteAds();
-            this.isLoading = false;
-            console.log(profile);
-          }),
-          catchError(error => {
-            console.error('ProfileComponent: Error cargando perfil:', error);
-            this.loadingError = 'Error al cargar el perfil. Inténtalo más tarde.';
+      });
+    } else {
+      // Perfil propio (requiere autenticación)
+      if (!this.authService.isLoggedIn) {
+        this.router.navigate(['/login']);
+        return;
+      }
+      this.authService.refreshUserData().pipe(
+        catchError(error => {
+          return of(this.authService.getCurrentUser());
+        }),
+        switchMap(user => {
+          const currentUser = user || this.authService.getCurrentUser();
+          if (!currentUser || !currentUser.id) {
+            this.loadingError = 'No se pudo cargar el perfil. Por favor, inicia sesión nuevamente.';
             this.isLoading = false;
             return of(null);
-          })
-        );
-      })
-    ).subscribe();
+          }
+          return this.profileService.getProfile(currentUser.id).pipe(
+            tap(profile => {
+              this.profile = profile;
+              this.editableProfile = { ...profile };
+              this.loadUserAds();
+              this.loadFavoriteAds();
+              this.isLoading = false;
+            }),
+            catchError(error => {
+              this.loadingError = 'Error al cargar el perfil. Inténtalo más tarde.';
+              this.isLoading = false;
+              return of(null);
+            })
+          );
+        })
+      ).subscribe();
+    }
   }
 
   loadUserAds(): void {
@@ -135,7 +143,7 @@ export class ProfileComponent implements OnInit {
             id: ad.id ?? 0, // Provide a default value of 0 if id is undefined
             title: ad.title,
             price: ad.price,
-            location: this.getLocationName(ad.location),
+            location: ad.location.name,
             publishedDate: ad.create_at,
             status: ad.state ? 'active' : 'sold',
             thumbnailUrl: ad.images?.[0] || 'assets/images/default-ad.png',

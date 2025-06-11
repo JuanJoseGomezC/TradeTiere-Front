@@ -47,9 +47,10 @@ export class ExampleIntegrationService {
             ad.race && ad.race.id !== undefined
               ? this.raceService.getById(ad.race.id)
               : of(null),
-          location: ad.location
-            ? this.locationService.getById(ad.location)
-            : of(null),
+          location:
+            ad.location && ad.location.id !== undefined
+              ? this.locationService.getById(ad.location.id)
+              : of(null),
           language: ad.language
             ? this.languageService.getById(ad.language)
             : of(null),
@@ -132,7 +133,7 @@ export class ExampleIntegrationService {
           if (filters.raceId && ad.race?.id !== filters.raceId) return false;
 
           // Filter by location
-          if (filters.locationId && ad.location !== filters.locationId)
+          if (filters.locationId && ad.location.id !== filters.locationId)
             return false;
 
           // Filter by price range

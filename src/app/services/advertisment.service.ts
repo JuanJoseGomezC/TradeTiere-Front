@@ -3,6 +3,7 @@ import { Observable, of, map } from 'rxjs';
 import { ApiService } from './api.service';
 import { SpecieDto } from './specie.service';
 import { RaceDto } from './race.service';
+import { LocationDto } from './location.service';
 
 export interface ImageDto {
   imageBase64: string;
@@ -15,7 +16,7 @@ export interface AdvertismentDto {
   title: string;
   description: string;
   price: number;
-  location: number;
+  location: LocationDto;
   specie: SpecieDto;
   race: RaceDto;
   language: number;
@@ -24,13 +25,14 @@ export interface AdvertismentDto {
   state: boolean;
   create_at: Date;
   image?: ImageDto | null;
+  userId?: number; // Añadido para reflejar el nuevo DTO del backend
 }
 
 export interface CreateAdvertismentDto {
   title: string;
   description: string;
   price: number;
-  location: number;
+  location: LocationDto;
   specie: SpecieDto;
   race: RaceDto;
   language: number;
@@ -128,18 +130,27 @@ export class AdvertismentService {
    */
   createAdvertisment(data: FormValue): Observable<Advertisment> {
     const dto = this.mapFormToCreateDto(data);
-    debugger
+
     return this.apiService
       .post<AdvertismentDto>('/advertisment', dto)
       .pipe(map((ad) => this.enhanceAdvertisment(ad)));
   }
 
   private mapFormToCreateDto(data: FormValue): CreateAdvertismentDto {
+    // Buscar el objeto LocationDto completo según el id seleccionado
+    let locationObj: LocationDto | undefined = undefined;
+    if (typeof data.location === 'object' && data.location !== null && 'id' in data.location) {
+      locationObj = data.location as LocationDto;
+    }
+    // Si solo se tiene el id, buscar en un array global o lanzar error (aquí solo fallback)
+    if (!locationObj) {
+      locationObj = { id: Number(data.location), name: '', language: 1 };
+    }
     return {
       title: data.title,
       description: data.description,
       price: data.price,
-      location: Number(data.location),
+      location: locationObj, // Enviar el objeto completo
       specie: data.specie,
       race: data.race,
       language: Number(data.language),
@@ -213,7 +224,7 @@ export class AdvertismentService {
     return {
       title: adData.title,
       description: adData.description,
-      location: adData.location,
+      location: adData.location?.id,
       specie: adData.specie?.id,
       race: adData.race?.id,
       birthdate: adData.birthdate,
@@ -232,28 +243,45 @@ export class AdvertismentService {
     const birthDate = adDto.birthdate ? new Date(adDto.birthdate) : undefined;
     const age = birthDate ? this.calculateAge(birthDate) : undefined;
 
+    // Asegurar que create_at siempre es un Date válido
+    let createAt: Date;
+    if (adDto.create_at) {
+      createAt =
+        adDto.create_at instanceof Date
+          ? adDto.create_at
+          : new Date(adDto.create_at);
+      if (isNaN(createAt.getTime())) {
+        // Si la conversión falla, usar fecha actual como fallback
+        createAt = new Date();
+      }
+    } else {
+      createAt = new Date();
+    }
+
+    // Mapear userId a sellerId
+    const sellerId = adDto.userId ?? undefined;
+
     return {
       ...adDto,
-      // La asignación de 'category' ha sido eliminada
       age: age,
       favorite: false,
       province: 'Desconocida',
       breed: 'Desconocida',
       images: [],
+      create_at: createAt,
+      sellerId: sellerId,
+      // sellerName: '', // Si tienes el nombre, asígnalo aquí
     };
   }
 
   /**
-   * Calcula la edad en años a partir de la fecha de nacimiento
+   * Calcula la edad en años completos a partir de la fecha de nacimiento
    */
   private calculateAge(birthdate: Date): number {
     const today = new Date();
     let age = today.getFullYear() - birthdate.getFullYear();
-    const monthDiff = today.getMonth() - birthdate.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthdate.getDate())
-    ) {
+    const m = today.getMonth() - birthdate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthdate.getDate())) {
       age--;
     }
     return age;

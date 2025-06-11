@@ -106,19 +106,7 @@ export class RegisterComponent implements OnInit {
     // (esto ya está en el template, pero aquí puedes agregar un toast o SweetAlert2)
     this.authService.register(registerData).subscribe({
       next: (user) => {
-        // Mostrar toast de éxito
-        const win = window as any;
-        if (win.Swal) {
-          win.Swal.fire({
-            icon: 'success',
-            title: '¡Registro exitoso!',
-            text: 'Tu cuenta ha sido creada correctamente.',
-            timer: 2000,
-            showConfirmButton: false
-          });
-        } else {
-          alert('¡Registro exitoso!');
-        }
+        // Solo redirigir, sin alert ni toast
         this.router.navigate(['/home']);
         this.isSubmitting = false;
       },

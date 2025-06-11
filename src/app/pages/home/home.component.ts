@@ -16,6 +16,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule } from '@angular/material/core';
 import Swal from 'sweetalert2';
+import { UserService } from '../../services/user.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -79,7 +82,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
     private locationService: LocationService,
     private languageService: LanguageService,
     private specieService: SpecieService,
-    private raceService: RaceService
+    private raceService: RaceService,
+    private userService: UserService // Añadido
   ) {}
 
   ngOnInit(): void {
@@ -190,40 +194,52 @@ export class HomeComponent implements OnInit, AfterViewInit {
   loadAdvertisments(): void {
     this.loading = true;
     this.error = null;
-
-    // YA NO SE USA: Se comenta o elimina la llamada a los datos de prueba.
-    // this.createMockAdvertisments();
-
-    // SE ACTIVA: El código para llamar al servicio real.
     this.advertismentService.getAdvertisments().subscribe({
       next: (ads) => {
-        // 1. Los datos del servicio se asignan a la lista maestra.
-        this.advertisments = ads;
-
-        // 2. Se realizan los cálculos de precio con los datos reales.
-        const prices = ads.map((ad) => ad.price);
-        const maxPrice = Math.max(...prices);
-        if (maxPrice > 0) {
-          this.maxSliderValue = Math.ceil(maxPrice / 1000) * 1000;
+        // Obtener nombres de usuario para cada anuncio usando forkJoin
+        const userIdSet = Array.from(new Set(ads.map(ad => ad.userId).filter((id): id is number => typeof id === 'number')));
+        const userRequests = userIdSet.map(userId =>
+          this.userService.getUserEnhanced(userId).pipe(
+            catchError(() => of({ id: userId, fullName: 'Usuario desconocido' }))
+          )
+        );
+        if (userRequests.length === 0) {
+          this.advertisments = ads;
+          this.applyFilters();
+          this.loading = false;
+          setTimeout(() => { this.updateSliderTrack(); }, 100);
+          return;
         }
-
-        if (!this.isMaxPriceActive) {
-          this.maxPrice = this.maxSliderValue;
-        }
-
-        // 3. Se aplican los filtros para mostrar los anuncios en la plantilla.
-        this.applyFilters();
-
-        // 4. Se desactiva la pantalla de carga.
-        this.loading = false;
-
-        // 5. Se actualiza el slider después de que todo está listo.
-        setTimeout(() => {
-          this.updateSliderTrack();
-        }, 100);
+        forkJoin(userRequests).subscribe((users) => {
+          const userMap = new Map(users.map(u => [u.id, u.fullName]));
+          const adsWithSeller = ads.map(ad => ({
+            ...ad,
+            sellerName: userMap.get(ad.userId) || 'Usuario desconocido'
+          }));
+          this.advertisments = adsWithSeller;
+          // 2. Se realizan los cálculos de precio con los datos reales.
+          const prices = adsWithSeller.map((ad) => ad.price);
+          const maxPrice = Math.max(...prices);
+          if (maxPrice > 0) {
+            this.maxSliderValue = Math.ceil(maxPrice / 1000) * 1000;
+          }
+          if (!this.isMaxPriceActive) {
+            this.maxPrice = this.maxSliderValue;
+          }
+          // 3. Se aplican los filtros para mostrar los anuncios en la plantilla.
+          this.applyFilters();
+          // 4. Se desactiva la pantalla de carga.
+          this.loading = false;
+          // 5. Se actualiza el slider después de que todo está listo.
+          setTimeout(() => {
+            this.updateSliderTrack();
+          }, 100);
+        }, (err) => {
+          this.showError('No se pudieron cargar los usuarios de los anuncios.');
+          this.loading = false;
+        });
       },
       error: (err) => {
-        // En caso de error en la comunicación con el servicio.
         this.showError(
           'No se pudieron cargar los anuncios. Por favor, inténtelo de nuevo más tarde.'
         );
@@ -436,142 +452,142 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   // Mock data creation for development purposes
-  private createMockAdvertisments(): void {
-    const mockAds: Advertisment[] = [
-      {
-        id: 1,
-        title: 'Vaca lechera Holstein',
-        description:
-          'Vaca lechera Holstein de 4 años en excelente estado de salud. Produce 30 litros diarios.',
-        price: 1200,
-        location: 1,
-        specie: { id: 1, name: 'Vacuno', language: 1 },
-        race: { id: 1, name: 'Holstein', language: 1, specie: 1 },
-        language: 1,
-        birthdate: new Date('2020-05-12'),
-        gender: 'Hembra',
-        state: true,
-        create_at: new Date('2024-03-15'),
-        image: null,
-      },
-      {
-        id: 2,
-        title: 'Toro Aberdeen Angus de pura raza',
-        description:
-          'Toro Aberdeen Angus de 3 años, excelente genética para reproducción y carne de alta calidad.',
-        price: 2500,
-        location: 4,
-        specie: { id: 1, name: 'Vacuno', language: 1 },
-        race: { id: 2, name: 'Aberdeen Angus', language: 1, specie: 1 },
-        language: 1,
-        birthdate: new Date('2021-06-10'),
-        gender: 'Macho',
-        state: true,
-        create_at: new Date('2024-04-05'),
-        image: null,
-      },
-      {
-        id: 3,
-        title: 'Cordero merino de alta calidad',
-        description:
-          'Cordero merino de 8 meses, ideal para reproducción. Lana de excelente calidad.',
-        price: 350,
-        location: 2,
-        specie: { id: 2, name: 'Ovino', language: 1 },
-        race: { id: 2, name: 'Merino', language: 1, specie: 2 },
-        language: 1,
-        birthdate: new Date('2023-10-05'),
-        gender: 'Macho',
-        state: true,
-        create_at: new Date('2024-05-01'),
-        image: null,
-      },
-      {
-        id: 4,
-        title: 'Oveja Suffolk de calidad premium',
-        description:
-          'Oveja Suffolk de 2 años, excelente para carne y producción lechera.',
-        price: 400,
-        location: 5,
-        specie: { id: 2, name: 'Ovino', language: 1 },
-        race: { id: 3, name: 'Suffolk', language: 1, specie: 2 },
-        language: 1,
-        birthdate: new Date('2022-03-15'),
-        gender: 'Hembra',
-        state: true,
-        create_at: new Date('2024-04-25'),
-        image: null,
-      },
-      {
-        id: 5,
-        title: 'Cabra Murciano-Granadina lechera',
-        description:
-          'Cabra Murciano-Granadina de 3 años con alta producción láctea, ideal para queserías artesanales.',
-        price: 280,
-        location: 6,
-        specie: { id: 3, name: 'Caprino', language: 1 },
-        race: { id: 1, name: 'Murciano-Granadina', language: 1, specie: 3 },
-        language: 1,
-        birthdate: new Date('2021-02-20'),
-        gender: 'Hembra',
-        state: true,
-        create_at: new Date('2024-04-10'),
-        image: null,
-      },
-      {
-        id: 6,
-        title: 'Cerdo Ibérico de bellota',
-        description:
-          'Cerdo Ibérico puro de bellota de 14 meses, criado en dehesa natural.',
-        price: 650,
-        location: 7,
-        specie: { id: 4, name: 'Porcino', language: 1 },
-        race: { id: 1, name: 'Ibérico', language: 1, specie: 4 },
-        language: 1,
-        birthdate: new Date('2023-02-10'),
-        gender: 'Macho',
-        state: true,
-        create_at: new Date('2024-04-15'),
-        image: null,
-      },
-      {
-        id: 7,
-        title: 'Gallinas ponedoras Leghorn',
-        description:
-          'Lote de 5 gallinas ponedoras de raza Leghorn. Producen huevos grandes a diario.',
-        price: 75,
-        location: 3,
-        specie: { id: 5, name: 'Avícola', language: 1 },
-        race: { id: 5, name: 'Leghorn', language: 1, specie: 5 },
-        language: 1,
-        birthdate: new Date('2023-01-15'),
-        gender: 'Hembra',
-        state: true,
-        create_at: new Date('2024-04-20'),
-        image: null,
-      },
-      {
-        id: 8,
-        title: 'Caballo Pura Raza Española',
-        description:
-          'Caballo PRE de 5 años, domado y con excelente morfología. Ideal para doma clásica.',
-        price: 8500,
-        location: 8,
-        specie: { id: 6, name: 'Equino', language: 1 },
-        race: { id: 1, name: 'Pura Raza Española', language: 1, specie: 6 },
-        language: 1,
-        birthdate: new Date('2019-07-20'),
-        gender: 'Macho',
-        state: true,
-        create_at: new Date('2024-03-30'),
-        image: null,
-      },
-    ];
+  // private createMockAdvertisments(): void {
+  //   const mockAds: Advertisment[] = [
+  //     {
+  //       id: 1,
+  //       title: 'Vaca lechera Holstein',
+  //       description:
+  //         'Vaca lechera Holstein de 4 años en excelente estado de salud. Produce 30 litros diarios.',
+  //       price: 1200,
+  //       location: { id: 1, name: 'Sevilla', language: 1 },
+  //       specie: { id: 1, name: 'Vacuno', language: 1 },
+  //       race: { id: 1, name: 'Holstein', language: 1, specie: 1 },
+  //       language: 1,
+  //       birthdate: new Date('2020-05-12'),
+  //       gender: 'Hembra',
+  //       state: true,
+  //       create_at: new Date('2024-03-15'),
+  //       image: null,
+  //     },
+  //     {
+  //       id: 2,
+  //       title: 'Toro Aberdeen Angus de pura raza',
+  //       description:
+  //         'Toro Aberdeen Angus de 3 años, excelente genética para reproducción y carne de alta calidad.',
+  //       price: 2500,
+  //       location: { id: 4, name: 'Valencia', language: 1 },
+  //       specie: { id: 1, name: 'Vacuno', language: 1 },
+  //       race: { id: 2, name: 'Aberdeen Angus', language: 1, specie: 1 },
+  //       language: 1,
+  //       birthdate: new Date('2021-06-10'),
+  //       gender: 'Macho',
+  //       state: true,
+  //       create_at: new Date('2024-04-05'),
+  //       image: null,
+  //     },
+  //     {
+  //       id: 3,
+  //       title: 'Cordero merino de alta calidad',
+  //       description:
+  //         'Cordero merino de 8 meses, ideal para reproducción. Lana de excelente calidad.',
+  //       price: 350,
+  //       location: { id: 2, name: 'Madrid', language: 1 },
+  //       specie: { id: 2, name: 'Ovino', language: 1 },
+  //       race: { id: 2, name: 'Merino', language: 1, specie: 2 },
+  //       language: 1,
+  //       birthdate: new Date('2023-10-05'),
+  //       gender: 'Macho',
+  //       state: true,
+  //       create_at: new Date('2024-05-01'),
+  //       image: null,
+  //     },
+  //     {
+  //       id: 4,
+  //       title: 'Oveja Suffolk de calidad premium',
+  //       description:
+  //         'Oveja Suffolk de 2 años, excelente para carne y producción lechera.',
+  //       price: 400,
+  //       location: { id: 5, name: 'Granada', language: 1 },
+  //       specie: { id: 2, name: 'Ovino', language: 1 },
+  //       race: { id: 3, name: 'Suffolk', language: 1, specie: 2 },
+  //       language: 1,
+  //       birthdate: new Date('2022-03-15'),
+  //       gender: 'Hembra',
+  //       state: true,
+  //       create_at: new Date('2024-04-25'),
+  //       image: null,
+  //     },
+  //     {
+  //       id: 5,
+  //       title: 'Cabra Murciano-Granadina lechera',
+  //       description:
+  //         'Cabra Murciano-Granadina de 3 años con alta producción láctea, ideal para queserías artesanales.',
+  //       price: 280,
+  //       location: { id: 6, name: 'Murcia', language: 1 },
+  //       specie: { id: 3, name: 'Caprino', language: 1 },
+  //       race: { id: 1, name: 'Murciano-Granadina', language: 1, specie: 3 },
+  //       language: 1,
+  //       birthdate: new Date('2021-02-20'),
+  //       gender: 'Hembra',
+  //       state: true,
+  //       create_at: new Date('2024-04-10'),
+  //       image: null,
+  //     },
+  //     {
+  //       id: 6,
+  //       title: 'Cerdo Ibérico de bellota',
+  //       description:
+  //         'Cerdo Ibérico puro de bellota de 14 meses, criado en dehesa natural.',
+  //       price: 650,
+  //       location: { id: 7, name: 'Badajoz', language: 1 },
+  //       specie: { id: 4, name: 'Porcino', language: 1 },
+  //       race: { id: 1, name: 'Ibérico', language: 1, specie: 4 },
+  //       language: 1,
+  //       birthdate: new Date('2023-02-10'),
+  //       gender: 'Macho',
+  //       state: true,
+  //       create_at: new Date('2024-04-15'),
+  //       image: null,
+  //     },
+  //     {
+  //       id: 7,
+  //       title: 'Gallinas ponedoras Leghorn',
+  //       description:
+  //         'Lote de 5 gallinas ponedoras de raza Leghorn. Producen huevos grandes a diario.',
+  //       price: 75,
+  //       location: { id: 3, name: 'Barcelona', language: 1 },
+  //       specie: { id: 5, name: 'Avícola', language: 1 },
+  //       race: { id: 5, name: 'Leghorn', language: 1, specie: 5 },
+  //       language: 1,
+  //       birthdate: new Date('2023-01-15'),
+  //       gender: 'Hembra',
+  //       state: true,
+  //       create_at: new Date('2024-04-20'),
+  //       image: null,
+  //     },
+  //     {
+  //       id: 8,
+  //       title: 'Caballo Pura Raza Española',
+  //       description:
+  //         'Caballo PRE de 5 años, domado y con excelente morfología. Ideal para doma clásica.',
+  //       price: 8500,
+  //       location: { id: 8, name: 'Córdoba', language: 1 },
+  //       specie: { id: 6, name: 'Equino', language: 1 },
+  //       race: { id: 1, name: 'Pura Raza Española', language: 1, specie: 6 },
+  //       language: 1,
+  //       birthdate: new Date('2019-07-20'),
+  //       gender: 'Macho',
+  //       state: true,
+  //       create_at: new Date('2024-03-30'),
+  //       image: null,
+  //     },
+  //   ];
 
-    this.advertisments = mockAds;
-    this.filteredAds = [...mockAds];
-    this.loading = false;
-  }
+  //   this.advertisments = mockAds;
+  //   this.filteredAds = [...mockAds];
+  //   this.loading = false;
+  // }
 
   // Helper methods for the template
   getEspecieName(especieId: string): string {
