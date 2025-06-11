@@ -338,13 +338,14 @@ export class CreateAdModalComponent implements OnInit {
       gender: data.gender,
       state: true,
       create_at: new Date(),
-      image: data.imageBase64
-        ? {
-            imageBase64: data.imageBase64,
-            name: data.imageName || '',
-            contentType: data.imageType || '',
-          }
-        : undefined,
+      image:
+        data.image.imageBase64 != null || data.image.imageBase64 != ''
+          ? {
+              imageBase64: data.image.imageBase64,
+              name: data.image.contentType || '',
+              contentType: data.image.contentType || '',
+            }
+          : undefined,
     };
   }
 }

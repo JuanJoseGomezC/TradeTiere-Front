@@ -48,7 +48,6 @@ export interface Advertisment extends AdvertismentDto {
   breed?: string;
   age?: number;
   province?: string;
-  images?: string[];
   sellerId?: number;
   sellerName?: string;
   sellerRating?: number;
@@ -57,6 +56,7 @@ export interface Advertisment extends AdvertismentDto {
   updatedAt?: Date;
   views?: number;
   favorite?: boolean;
+  imageUrl?: string | null;
 }
 
 export interface RelatedAd {
@@ -76,9 +76,7 @@ export interface FormValue {
   language: number | string;
   birthdate: string | Date;
   gender: string;
-  imageBase64: string | null;
-  imageName: string | null;
-  imageType: string | null;
+  image: ImageDto;
 }
 
 export interface UpdateAdvertismentDto {
@@ -130,13 +128,14 @@ export class AdvertismentService {
    */
   createAdvertisment(data: FormValue): Observable<Advertisment> {
     const dto = this.mapFormToCreateDto(data);
-
+debugger
     return this.apiService
       .post<AdvertismentDto>('/advertisment', dto)
       .pipe(map((ad) => this.enhanceAdvertisment(ad)));
   }
 
   private mapFormToCreateDto(data: FormValue): CreateAdvertismentDto {
+    debugger
     // Buscar el objeto LocationDto completo según el id seleccionado
     let locationObj: LocationDto | undefined = undefined;
     if (typeof data.location === 'object' && data.location !== null && 'id' in data.location) {
@@ -158,13 +157,14 @@ export class AdvertismentService {
       gender: data.gender,
       state: true,
       create_at: new Date(),
-      image: data.imageBase64
-        ? {
-            imageBase64: data.imageBase64,
-            name: data.imageName || '',
-            contentType: data.imageType || '',
-          }
-        : undefined,
+      image:
+        data.image.imageBase64 != null || data.image.imageBase64 != ''
+          ? {
+              imageBase64: data.image.imageBase64,
+              name: data.image.contentType || '',
+              contentType: data.image.contentType || '',
+            }
+          : undefined,
     };
   }
 
@@ -267,7 +267,6 @@ export class AdvertismentService {
       favorite: false,
       province: 'Desconocida',
       breed: 'Desconocida',
-      images: [],
       create_at: createAt,
       sellerId: sellerId,
       // sellerName: '', // Si tienes el nombre, asígnalo aquí

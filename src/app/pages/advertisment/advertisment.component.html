@@ -30,15 +30,29 @@
     <main class="ad-main">
       <!-- Image Gallery -->
       <section class="ad-gallery" aria-label="Galería de imágenes">        <div class="main-image-container">
+        <ng-container *ngIf="advertisment">
           <img
-            [src]="advertisment.images?.[currentImageIndex] || 'https://via.placeholder.com/800x600?text=Sin+Imagen'"
-            [alt]="'Imagen ' + (currentImageIndex + 1) + ' de ' + advertisment.title"
-            [title]="'Imagen ' + (currentImageIndex + 1) + ' de ' + advertisment.title"
+            *ngIf="advertisment.image?.imageBase64 && advertisment.image?.contentType"
+            [src]="'data:' + advertisment.image?.contentType + ';base64,' + advertisment.image?.imageBase64"
+            [alt]="'Imagen de ' + advertisment.title"
+            [title]="'Imagen de ' + advertisment.title"
             class="main-image"
             loading="lazy"
-          >
+          />
+          <img
+            *ngIf="!advertisment.image?.imageBase64 || !advertisment.image?.contentType"
+            src="https://via.placeholder.com/800x600?text=Sin+Imagen"
+            alt="Sin imagen disponible"
+            title="Sin imagen disponible"
+            class="main-image"
+            loading="lazy"
+          />
+        </ng-container>
 
-          <!-- Navigation buttons -->
+
+       </div>
+
+          <!-- Navigation buttons
           <button
             *ngIf="advertisment.images && advertisment.images.length > 1"
             class="gallery-nav prev"
@@ -56,14 +70,14 @@
             aria-label="Siguiente imagen"
           >
             <i class="fas fa-chevron-right"></i>
-          </button>
-
-          <!-- Image counter -->
+          </button> -->
+<!--
+          Image counter
           <div *ngIf="advertisment.images && advertisment.images.length > 1" class="image-counter">
             {{ currentImageIndex + 1 }} / {{ advertisment.images.length }}
           </div>
         </div>
-          <!-- Thumbnails -->
+          Thumbnails
         <div *ngIf="advertisment.images && advertisment.images.length > 1" class="thumbnails">
           <img
             *ngFor="let image of advertisment.images; let i = index"
@@ -75,7 +89,7 @@
             (click)="selectImage(i)"
             loading="lazy"
           >
-        </div>
+        </div> -->
       </section>
 
       <!-- Advertisment Details -->
@@ -203,7 +217,7 @@
   </div>
 
   <!-- Related Advertisments -->
-  <section class="related-ads" *ngIf="relatedAds.length > 0">
+  <!-- <section class="related-ads" *ngIf="relatedAds.length > 0">
     <h3>Anuncios relacionados</h3>
     <div class="related-ads-grid">
       <div *ngFor="let relatedAd of relatedAds"
@@ -227,5 +241,5 @@
         </div>
       </div>
     </div>
-  </section>
+  </section> -->
 </div>

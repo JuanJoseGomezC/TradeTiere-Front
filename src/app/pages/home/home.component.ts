@@ -92,8 +92,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.especies = species;
     });
     // Cargar localizaciones e idiomas desde la base de datos
-    this.locationService.getAll().subscribe(locs => this.locations = locs);
-    this.languageService.getAll().subscribe(langs => this.languages = langs);
+    this.locationService.getAll().subscribe((locs) => (this.locations = locs));
+    this.languageService
+      .getAll()
+      .subscribe((langs) => (this.languages = langs));
     // No cargar razas globalmente, solo al seleccionar especie
     // this.updateBreedsFromDB();
     this.locationService.getAll().subscribe((locs) => (this.locations = locs));
@@ -147,13 +149,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
       const specieId = Number(this.especieSeleccionada);
       if (!isNaN(specieId)) {
         // Obtener razas de la BBDD solo de la especie seleccionada
-        this.raceService.getRacesBySpecie(specieId).subscribe(breeds => {
         this.raceService.getRacesBySpecie(specieId).subscribe((breeds) => {
-          this.razas = breeds;
-          this.updateFilteredBreeds();
+          this.raceService.getRacesBySpecie(specieId).subscribe((breeds) => {
+            this.razas = breeds;
+            this.updateFilteredBreeds();
+          });
         });
-      })
-    } else {
+      } else {
         this.razas = [];
         this.razasFiltradas = [];
       }
@@ -190,54 +192,91 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.updateBreedsFromDB();
     this.applyFilters();
   }
-
   loadAdvertisments(): void {
     this.loading = true;
     this.error = null;
+
     this.advertismentService.getAdvertisments().subscribe({
       next: (ads) => {
-        // Obtener nombres de usuario para cada anuncio usando forkJoin
-        const userIdSet = Array.from(new Set(ads.map(ad => ad.userId).filter((id): id is number => typeof id === 'number')));
-        const userRequests = userIdSet.map(userId =>
-          this.userService.getUserEnhanced(userId).pipe(
-            catchError(() => of({ id: userId, fullName: 'Usuario desconocido' }))
+        // Obtener IDs de usuario únicos
+        const userIdSet = Array.from(
+          new Set(
+            ads
+              .map((ad) => ad.userId)
+              .filter((id): id is number => typeof id === 'number')
           )
         );
+
+        // Preparar las peticiones de usuario
+        const userRequests = userIdSet.map((userId) =>
+          this.userService
+            .getUserEnhanced(userId)
+            .pipe(
+              catchError(() =>
+                of({ id: userId, fullName: 'Usuario desconocido' })
+              )
+            )
+        );
+
+        // Si no hay usuarios, igual aplicar transformaciones mínimas
         if (userRequests.length === 0) {
-          this.advertisments = ads;
-          this.applyFilters();
-          this.loading = false;
-          setTimeout(() => { this.updateSliderTrack(); }, 100);
-          return;
-        }
-        forkJoin(userRequests).subscribe((users) => {
-          const userMap = new Map(users.map(u => [u.id, u.fullName]));
-          const adsWithSeller = ads.map(ad => ({
+          const adsWithImageUrls = ads.map((ad) => ({
             ...ad,
-            sellerName: userMap.get(ad.userId) || 'Usuario desconocido'
+            imageUrl:
+              ad.image?.imageBase64 && ad.image?.contentType
+                ? `data:${ad.image.contentType};base64,${ad.image.imageBase64}`
+                : null,
           }));
-          this.advertisments = adsWithSeller;
-          // 2. Se realizan los cálculos de precio con los datos reales.
-          const prices = adsWithSeller.map((ad) => ad.price);
-          const maxPrice = Math.max(...prices);
-          if (maxPrice > 0) {
-            this.maxSliderValue = Math.ceil(maxPrice / 1000) * 1000;
-          }
-          if (!this.isMaxPriceActive) {
-            this.maxPrice = this.maxSliderValue;
-          }
-          // 3. Se aplican los filtros para mostrar los anuncios en la plantilla.
+
+          this.advertisments = adsWithImageUrls;
           this.applyFilters();
-          // 4. Se desactiva la pantalla de carga.
           this.loading = false;
-          // 5. Se actualiza el slider después de que todo está listo.
           setTimeout(() => {
             this.updateSliderTrack();
           }, 100);
-        }, (err) => {
-          this.showError('No se pudieron cargar los usuarios de los anuncios.');
-          this.loading = false;
-        });
+          return;
+        }
+
+        // Si hay usuarios, obtener nombres y mapear todo
+        forkJoin(userRequests).subscribe(
+          (users) => {
+            const userMap = new Map(users.map((u) => [u.id, u.fullName]));
+
+            const adsWithSellerAndImage = ads.map((ad) => ({
+              ...ad,
+              sellerName: userMap.get(ad.userId) || 'Usuario desconocido',
+              imageUrl:
+                ad.image?.imageBase64 && ad.image?.contentType
+                  ? `data:${ad.image.contentType};base64,${ad.image.imageBase64}`
+                  : null,
+            }));
+
+            this.advertisments = adsWithSellerAndImage;
+
+            // Calcular valores de precio
+            const prices = adsWithSellerAndImage.map((ad) => ad.price);
+            const maxPrice = Math.max(...prices);
+            if (maxPrice > 0) {
+              this.maxSliderValue = Math.ceil(maxPrice / 1000) * 1000;
+            }
+            if (!this.isMaxPriceActive) {
+              this.maxPrice = this.maxSliderValue;
+            }
+
+            // Aplicar filtros y terminar carga
+            this.applyFilters();
+            this.loading = false;
+            setTimeout(() => {
+              this.updateSliderTrack();
+            }, 100);
+          },
+          (err) => {
+            this.showError(
+              'No se pudieron cargar los usuarios de los anuncios.'
+            );
+            this.loading = false;
+          }
+        );
       },
       error: (err) => {
         this.showError(
@@ -251,7 +290,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   // Nuevo método para filtrar razas por texto
   get filteredRazasBySearch(): any[] {
     if (!this.breedSearchTerm) return this.razasFiltradas;
-    return this.razasFiltradas.filter(raza =>
+    return this.razasFiltradas.filter((raza) =>
       raza.name.toLowerCase().includes(this.breedSearchTerm.toLowerCase())
     );
   }
@@ -688,5 +727,20 @@ export class HomeComponent implements OnInit, AfterViewInit {
         `Price slider: min=${minValue}, max=${maxValue}, width=${safeWidth}%, left=${safeMinPercent}%`
       );
     }
+  }
+  calculateAge(birthdate: Date): string {
+    if (!(birthdate instanceof Date)) {
+      birthdate = new Date(birthdate);
+    }
+    const today = new Date();
+    let years = today.getFullYear() - birthdate.getFullYear();
+    let months = today.getMonth() - birthdate.getMonth();
+    if (months < 0 || (months === 0 && today.getDate() < birthdate.getDate())) {
+      years--;
+      months = (months + 12) % 12;
+    }
+    if (years > 0) return `${years} ${years === 1 ? 'año' : 'años'}`;
+    if (months > 0) return `${months} ${months === 1 ? 'mes' : 'meses'}`;
+    return 'Recién nacido';
   }
 }

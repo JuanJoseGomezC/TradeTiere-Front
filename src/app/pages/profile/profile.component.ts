@@ -146,7 +146,7 @@ export class ProfileComponent implements OnInit {
             location: ad.location.name,
             publishedDate: ad.create_at,
             status: ad.state ? 'active' : 'sold',
-            thumbnailUrl: ad.images?.[0] || 'assets/images/default-ad.png',
+            thumbnailUrl: ad.image?.imageBase64 || 'assets/images/default-ad.png',
             views: ad.views || 0,
             favorites: 0 // TODO: Add when favorites API is available
           }));

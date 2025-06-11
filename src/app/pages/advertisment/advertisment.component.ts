@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Advertisment, AdvertismentService } from '../../services/advertisment.service';
+import { Advertisment, AdvertismentDto, AdvertismentService } from '../../services/advertisment.service';
 import { UserService } from '../../services/user.service';
 import { catchError, of } from 'rxjs';
 
@@ -48,38 +48,38 @@ export class AdvertismentComponent implements OnInit {
   //   },
   // };
 
-  relatedAds: Advertisment[] = [
-    {
-      id: 2,
-      title: 'Labrador Retriever Adulto',
-      price: 800,
-      images: [
-        'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=300&h=200&fit=crop',
-      ],
-      province: 'Barcelona',
-      age: 24,
-    } as Advertisment,
-    {
-      id: 3,
-      title: 'Golden Retriever Hembra',
-      price: 1000,
-      images: [
-        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=300&h=200&fit=crop',
-      ],
-      province: 'Valencia',
-      age: 6,
-    } as Advertisment,
-    {
-      id: 4,
-      title: 'Cachorro Pastor Alemán',
-      price: 900,
-      images: [
-        'https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=300&h=200&fit=crop',
-      ],
-      province: 'Sevilla',
-      age: 4,
-    } as Advertisment,
-  ];
+  // relatedAds: Advertisment[] = [
+  //   {
+  //     id: 2,
+  //     title: 'Labrador Retriever Adulto',
+  //     price: 800,
+  //     images: [
+  //       'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=300&h=200&fit=crop',
+  //     ],
+  //     province: 'Barcelona',
+  //     age: 24,
+  //   } as Advertisment,
+  //   {
+  //     id: 3,
+  //     title: 'Golden Retriever Hembra',
+  //     price: 1000,
+  //     images: [
+  //       'https://images.unsplash.com/photo-1552053831-71594a27632d?w=300&h=200&fit=crop',
+  //     ],
+  //     province: 'Valencia',
+  //     age: 6,
+  //   } as Advertisment,
+  //   {
+  //     id: 4,
+  //     title: 'Cachorro Pastor Alemán',
+  //     price: 900,
+  //     images: [
+  //       'https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=300&h=200&fit=crop',
+  //     ],
+  //     province: 'Sevilla',
+  //     age: 4,
+  //   } as Advertisment,
+  // ];
 
   features = [
     'Pedigree completo',
@@ -109,21 +109,28 @@ export class AdvertismentComponent implements OnInit {
         next: (ad) => {
           if (ad) {
             this.advertisment = ad;
-            // Añadir imagen por defecto si no hay imágenes
-            if (!this.advertisment.images || this.advertisment.images.length === 0) {
-              this.advertisment.images = [
-                'https://via.placeholder.com/800x600?text=Sin+Imagen',
-              ];
+
+            // Si no hay imagen válida, dejarla en null
+            if (
+              !this.advertisment.image ||
+              !this.advertisment.image.imageBase64
+            ) {
+              this.advertisment.image = null;
             }
-            // Obtener nombre y apellido del vendedor
+
+            // Obtener nombre del vendedor
             if (ad.userId) {
-              this.userService.getUserEnhanced(ad.userId).pipe(
-                catchError(() => of({ fullName: 'Anunciante desconocido' }))
-              ).subscribe(user => {
-                if (this.advertisment) {
-                  this.advertisment.sellerName = user.fullName || 'Anunciante desconocido';
-                }
-              });
+              this.userService
+                .getUserEnhanced(ad.userId)
+                .pipe(
+                  catchError(() => of({ fullName: 'Anunciante desconocido' }))
+                )
+                .subscribe((user) => {
+                  if (this.advertisment) {
+                    this.advertisment.sellerName =
+                      user.fullName || 'Anunciante desconocido';
+                  }
+                });
             } else {
               if (this.advertisment) {
                 this.advertisment.sellerName = 'Anunciante desconocido';
@@ -139,18 +146,10 @@ export class AdvertismentComponent implements OnInit {
           this.loading = false;
         },
       });
+
     } else {
       this.error = true;
       this.loading = false;
-    }
-  }
-
-  nextImage() {
-    if (
-      this.advertisment?.images &&
-      this.currentImageIndex < this.advertisment.images.length - 1
-    ) {
-      this.currentImageIndex++;
     }
   }
 
@@ -183,7 +182,7 @@ export class AdvertismentComponent implements OnInit {
             price: this.advertisment.price,
             location: this.advertisment.location && this.advertisment.location.name ? this.advertisment.location.name : '',
             publishedDate: this.advertisment.create_at,
-            thumbnailUrl: this.advertisment.images?.[0] || '',
+            thumbnailUrl: this.advertisment.image || '',
             sellerName: this.advertisment.sellerName || '',
             // Guardar localización y fecha explícitamente
             locationFull: this.advertisment.location,

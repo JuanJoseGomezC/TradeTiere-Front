@@ -52,6 +52,7 @@
   --tradetiere-medium-brown: #A77C5A;
   --tradetiere-terracotta: #D48163;
   --tradetiere-cream: #FFF2E0;
+  --mat-sys-surface-variant: tranparent;
   /* Variables para tema claro (default) */
   --background-color: var(--tradetiere-cream);
   --text-color: var(--tradetiere-dark-brown);

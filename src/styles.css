@@ -47,7 +47,6 @@ button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-
 /* Utility classes */
 .container {
   max-width: 1200px;

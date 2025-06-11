@@ -108,7 +108,13 @@ mat-form-field {
   min-width: 46% !important;
   color: #5A504A !important;
 }
-
+::ng-deep .mat-mdc-text-field.mdc-text-field--filled {
+  --mdc-filled-text-field-container-color: #ffffff;
+}:root {
+  --mdc-filled-text-field-container-color: #f0f0f0;
+}.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  background-color: #f0f0f0 !important;
+}
 .close-button:hover {
   background-color: rgba(0, 0, 0, 0.05);
   color: var(--tradetiere-terracotta);

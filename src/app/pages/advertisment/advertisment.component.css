@@ -1,4 +1,6 @@
 /* Advertisment Component Styles */
+/* :host asegura que estas reglas solo se apliquen cuando
+   el componente padre (tu componente) esté presente. */
 
 /* Loading and Error States */
 .loading-container,
@@ -108,7 +110,7 @@
 .main-image {
   width: 100%;
   height: 400px;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
@@ -369,6 +371,9 @@
   gap: 1.5rem;
 }
 
+.ad-seller, div.ad-date{
+  color:#f3a83f;
+}
 /* Seller Information */
 .seller-info {
   background: white;
