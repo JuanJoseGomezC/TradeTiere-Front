@@ -6,6 +6,10 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   padding: 2rem;
 }
+
+.profile-info, .ad-details, h3{
+  color: #f0ac4e;
+}
 .profile-header {
   display: flex;
   align-items: center;
@@ -18,7 +22,7 @@
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  object-fit: cover;
+  object-fit: contain;
   border: 2px solid #e0e0e0;
 }
 .profile-info h2 {
@@ -54,7 +58,7 @@
 .ad-image img {
   width: 100%;
   height: 180px;
-  object-fit: cover;
+  object-fit: contain;
   background: #eee;
 }
 .ad-details {
@@ -76,7 +80,7 @@
 .view-ad {
   margin-top: 0.5rem;
   background: #1976d2;
-  color: #fff;
+  color: #ffffff;
   border: none;
   border-radius: 4px;
   padding: 0.5rem 1rem;

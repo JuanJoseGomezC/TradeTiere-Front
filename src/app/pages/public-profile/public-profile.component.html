@@ -22,7 +22,7 @@
     <div class="ads-grid" *ngIf="ads.length > 0">
       <div class="ad-card" *ngFor="let ad of ads">
         <div class="ad-image">
-          <img [src]="ad.images && ad.images.length > 0 ? ad.images[0] : 'https://via.placeholder.com/400x300?text=Sin+Imagen'" [alt]="ad.title">
+          <img [src]="'data:' + ad.image?.contentType + ';base64,' + ad.image?.imageBase64" [alt]="ad.title">
         </div>
         <div class="ad-details">
           <h4>{{ ad.title }}</h4>
