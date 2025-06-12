@@ -18,8 +18,8 @@
         </div>
         <div class="user-details">
           <h1>{{ profile.name }}</h1>
-          <p class="location"><i class="fas fa-map-marker-alt"></i> {{ profile.province }}</p>
           <p class="member-since"><i class="fas fa-user-clock"></i> Miembro desde {{ profile.joinDate | date:'MMMM yyyy' }}</p>
+          <p class="created-at"><i class="fas fa-calendar-plus"></i> Perfil creado el {{ profile.createAt | date:'dd/MM/yyyy' }}</p>
         </div>
       </div>
       <div class="profile-actions">        <button type="button" class="primary-button" (click)="openCreateAdModal()">
@@ -147,8 +147,8 @@
                     <h3><a [routerLink]="['/advertisment', ad.id]">{{ ad.title }}</a></h3>
                     <div class="ad-price">{{ ad.price | currency:'EUR':'symbol':'1.0-0' }}</div>
                     <div class="ad-info">
-                      <span><i class="fas fa-map-marker-alt"></i> {{ ad.location }}</span>
                       <span><i class="fas fa-calendar-alt"></i> {{ ad.publishedDate | date:'dd/MM/yyyy' }}</span>
+                      <span><i class="fas fa-user-clock"></i> Miembro desde {{ profile.joinDate | date:'MMMM yyyy' }}</span>
                     </div>
                     <div class="ad-stats">
                       <span><i class="fas fa-eye"></i> {{ ad.views }} visitas</span>
