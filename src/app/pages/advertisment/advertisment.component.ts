@@ -118,6 +118,19 @@ export class AdvertismentComponent implements OnInit {
               this.advertisment.image = null;
             }
 
+            // Marcar favorito si está en localStorage
+            try {
+              const stored = localStorage.getItem('favoriteAds');
+              if (stored) {
+                const favorites = JSON.parse(stored);
+                this.advertisment.favorite = favorites.some((fav: any) => fav.id === this.advertisment!.id);
+              } else {
+                this.advertisment.favorite = false;
+              }
+            } catch {
+              this.advertisment.favorite = false;
+            }
+
             // Obtener nombre del vendedor
             if (ad.userId) {
               this.userService
@@ -165,16 +178,14 @@ export class AdvertismentComponent implements OnInit {
 
   toggleFavorite() {
     if (this.advertisment) {
-      this.advertisment.favorite = !this.advertisment.favorite;
-      // Guardar/quitar en favoritos de localStorage
       const key = 'favoriteAds';
       let favorites: any[] = [];
       try {
         const stored = localStorage.getItem(key);
         if (stored) favorites = JSON.parse(stored);
       } catch {}
-      if (this.advertisment.favorite) {
-        // Añadir si no existe
+      if (!this.advertisment.favorite) {
+        // Añadir a favoritos
         if (!favorites.some(ad => ad.id === this.advertisment!.id)) {
           favorites.push({
             id: this.advertisment.id,
@@ -184,15 +195,16 @@ export class AdvertismentComponent implements OnInit {
             publishedDate: this.advertisment.create_at,
             thumbnailUrl: this.advertisment.image || '',
             sellerName: this.advertisment.sellerName || '',
-            // Guardar localización y fecha explícitamente
             locationFull: this.advertisment.location,
             createAt: this.advertisment.create_at,
             image: this.advertisment?.image || null
           });
         }
+        this.advertisment.favorite = true;
       } else {
         // Quitar de favoritos
         favorites = favorites.filter(ad => ad.id !== this.advertisment!.id);
+        this.advertisment.favorite = false;
       }
       localStorage.setItem(key, JSON.stringify(favorites));
     }

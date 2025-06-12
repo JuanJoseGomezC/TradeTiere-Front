@@ -613,8 +613,11 @@
   color: var(--text-color);
 }
 
+.action-button.favorite,
+.action-button.is-favorite,
 .action-button.favorite:not(.is-favorite):hover {
-  color: var(--tradetiere-terracotta);
+  /* Eliminar estilos del botón de favorito */
+  display: none !important;
 }
 
 .action-button.is-favorite {
