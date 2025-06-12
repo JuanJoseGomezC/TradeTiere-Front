@@ -169,12 +169,7 @@
       <section class="seller-info">
         <h3>Información del vendedor</h3>
         <div class="seller-profile">
-          <img
-            [src]="'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'"
-            [alt]="'Avatar de ' + advertisment.sellerName"
-            [title]="'Avatar de ' + advertisment.sellerName"
-            class="seller-avatar"
-          >
+          <!-- Foto de perfil eliminada -->
           <div class="seller-details">
             <div class="seller-name"><b>Nombre:</b> {{ advertisment.sellerName }}</div>
             <div class="seller-rating" *ngIf="advertisment.sellerRating">
@@ -189,17 +184,13 @@
             <div class="seller-join-date" *ngIf="advertisment.sellerJoinDate">
               Miembro desde {{ advertisment.sellerJoinDate | date:'MMM yyyy' }}
             </div>
-            <button class="profile-button" (click)="goToSellerProfile()">
-              <i class="fas fa-user"></i> Ver perfil del vendedor
+            <button class="profile-button enhanced-profile-btn" (click)="goToSellerProfile()">
+              <i class="fas fa-user"></i>
+              <span>Ver perfil del vendedor</span>
             </button>
           </div>
         </div>
-        <div class="seller-contact">
-          <button class="contact-button primary" (click)="contactSeller()">
-            <i class="fas fa-envelope"></i>
-            Enviar mensaje
-          </button>
-        </div>
+        <!-- Botón de enviar mensaje eliminado -->
       </section>
 
       <!-- Safety Tips -->

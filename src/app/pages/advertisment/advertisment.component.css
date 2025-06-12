@@ -364,6 +364,29 @@
   background: #545b62;
 }
 
+.enhanced-profile-btn {
+  background: linear-gradient(90deg, #f3a83f 0%, #ff7e5f 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(243, 168, 63, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 1rem;
+  cursor: pointer;
+}
+
+.enhanced-profile-btn:hover {
+  background: linear-gradient(90deg, #ff7e5f 0%, #f3a83f 100%);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 4px 16px rgba(243, 168, 63, 0.25);
+}
+
 /* Sidebar */
 .ad-sidebar {
   display: flex;
