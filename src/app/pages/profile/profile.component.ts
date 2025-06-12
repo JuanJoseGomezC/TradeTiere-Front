@@ -7,6 +7,7 @@ import { AuthService, User } from '../../services/auth.service';
 import { HttpClientModule } from '@angular/common/http';
 import { catchError, switchMap, tap, of } from 'rxjs';
 import { CreateAdModalComponent } from "../../components/create-ad-modal/create-ad-modal.component";
+import { EditAdModalComponent } from '../../components/edit-ad-modal/edit-ad-modal.component';
 import { AdvertismentService, ImageDto } from '../../services/advertisment.service';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -41,7 +42,9 @@ interface FavoriteAd {
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, HttpClientModule, CreateAdModalComponent, MatDatepickerModule, MatFormFieldModule, MatInputModule, MatNativeDateModule],
+  imports: [
+    CommonModule, RouterLink, FormsModule, HttpClientModule, CreateAdModalComponent, EditAdModalComponent, MatDatepickerModule, MatFormFieldModule, MatInputModule, MatNativeDateModule
+  ],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
@@ -56,6 +59,8 @@ export class ProfileComponent implements OnInit {
   messageCount = 5;
   loadingError: string | null = null;
   showCreateAdModal = false;
+  showEditAdModal = false;
+  selectedAdToEdit: any = null;
 
   // Password change variables
   newPassword: string = '';
@@ -368,6 +373,35 @@ export class ProfileComponent implements OnInit {
         }
       });
     }
+  }
+
+  openEditAdModal(ad: any) {
+    this.selectedAdToEdit = { ...ad };
+    this.showEditAdModal = true;
+  }
+
+  closeEditAdModal() {
+    this.showEditAdModal = false;
+    this.selectedAdToEdit = null;
+  }
+
+  onAdUpdated(updatedAd: any) {
+    // Lógica para actualizar el anuncio en el backend
+    if (!updatedAd || !updatedAd.id) return;
+    this.advertismentService.updateAdvertisment(updatedAd.id, updatedAd).subscribe({
+      next: () => {
+        // Actualizar el anuncio en la lista local
+        const idx = this.userAds.findIndex((ad: any) => ad.id === updatedAd.id);
+        if (idx !== -1) {
+          this.userAds[idx] = { ...this.userAds[idx], ...updatedAd };
+        }
+        this.closeEditAdModal();
+      },
+      error: (err) => {
+        alert('Error al actualizar el anuncio');
+        this.closeEditAdModal();
+      }
+    });
   }
 
   validateRegisterFields(register: { mail: string; birthdate: string | Date; password: string; }, validatePassword: boolean = true): string | null {

@@ -155,10 +155,12 @@
                       <span><i class="fas fa-heart"></i> {{ ad.favorites }} favoritos</span>
                     </div>
                   </div>
-                  <div class="ad-actions">                    <button type="button" class="action-button edit" title="Editar anuncio" aria-label="Editar anuncio">
+                  <div class="ad-actions">
+                    <button type="button" class="action-button edit" title="Editar anuncio" aria-label="Editar anuncio" (click)="openEditAdModal(ad)">
                       <i class="fas fa-pencil-alt"></i>
                     </button>
-                    @if (ad.status !== 'sold') {                      <button type="button" class="action-button sold" (click)="markAsSold(ad.id)" title="Marcar como vendido" aria-label="Marcar como vendido">
+                    @if (ad.status !== 'sold') {
+                      <button type="button" class="action-button sold" (click)="markAsSold(ad.id)" title="Marcar como vendido" aria-label="Marcar como vendido">
                         <i class="fas fa-check"></i>
                       </button>
                     }                    <button type="button" class="action-button delete" (click)="deleteAd(ad.id)" title="Eliminar anuncio" aria-label="Eliminar anuncio">
@@ -289,3 +291,11 @@
   *ngIf="showCreateAdModal"
   (closeModal)="closeCreateAdModal()"
 ></app-create-ad-modal>
+
+<!-- Modal de edición de anuncio -->
+<app-edit-ad-modal
+  *ngIf="showEditAdModal"
+  [ad]="selectedAdToEdit"
+  (closeModal)="closeEditAdModal()"
+  (adUpdated)="onAdUpdated($event)"
+></app-edit-ad-modal>
