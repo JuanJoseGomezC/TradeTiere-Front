@@ -77,7 +77,10 @@ export class AuthService {
         // Opcionalmente, refrescar los datos del usuario en segundo plano
         this.refreshUserData().subscribe({
           next: () => console.log('AuthService: Datos de usuario actualizados al restaurar sesión'),
-          error: (err) => console.error('AuthService: Error al actualizar datos al restaurar sesión:', err)
+          error: (err) => {
+            console.error('AuthService: Error al actualizar datos al restaurar sesión:', err);
+            this.logout();
+          }
         });
       } catch (e) {
         console.error('AuthService: Error al cargar datos de sesión:', e);

@@ -1,312 +1,253 @@
 <div class="home-container">
-  <div class="main-content-layout">
-    <div class="home-flex-layout">
-      <aside class="filters-section">
-        <div class="filters-container">
-          <h2>Filtrar anuncios</h2>
+  <!-- Contenido para usuarios NO autenticados -->
+  @if (!isLoggedIn) {
+  <div class="welcome-page">
+    <div class="welcome-content">
+      <h1>Bienvenido a TradeTiere</h1>
+      <p>La plataforma líder para la compra y venta de ganado</p>
 
-          <div class="filter-group">
-            <label for="searchTerm">Buscar:</label>
-            <div class="search-input-wrapper">
-              <input
-                type="text"
-                id="searchTerm"
-                [(ngModel)]="searchTerm"
-                placeholder="Buscar por título, descripción..."
-                (keyup.enter)="applyFilters()"
-              />
-              <button
-                type="button"
-                class="search-button"
-                (click)="applyFilters()"
-                title="Buscar"
-                aria-label="Buscar"
-              >
-                <i class="fas fa-search"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="filter-group">
-            <label for="especie">Especie:</label>
-            <select
-              id="especie"
-              [(ngModel)]="especieSeleccionada"
-              (change)="onEspecieChange()"
-            >
-              <option value="">Todas las especies</option>
-              @for (especie of especies; track especie.id) {
-              <option [value]="especie.id">{{ especie.name }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label for="raza">Raza:</label>
-            <select
-              id="raza"
-              [(ngModel)]="razaSeleccionada"
-              (change)="applyFilters()"
-              [disabled]="!especieSeleccionada"
-            >
-              <option value="">Todas las razas</option>
-              @for (raza of filteredRazasBySearch; track raza.id) {
-              <option [value]="raza.id">{{ raza.name }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label for="location">Localización:</label>
-            <select
-              id="location"
-              [(ngModel)]="selectedLocation"
-              (change)="applyFilters()"
-            >
-              <option value="">Todas las provincias</option>
-              @for (loc of locations; track loc.id) {
-              <option [value]="loc.name">{{ loc.name }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label for="language">Idioma:</label>
-            <select
-              id="language"
-              [(ngModel)]="selectedLanguage"
-              (change)="applyFilters()"
-            >
-              <option value="">Todos los idiomas</option>
-              @for (lang of languages; track lang.id) {
-              <option [value]="lang.id">{{ lang.language }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label for="gender">Género:</label>
-            <select
-              id="gender"
-              [(ngModel)]="selectedGender"
-              (change)="applyFilters()"
-            >
-              <option value="">Ambos</option>
-              <option value="Macho">Macho</option>
-              <option value="Hembra">Hembra</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label>Edad (meses):</label>
-            <div class="filter-age-range">
-              <input
-                type="number"
-                min="0"
-                [(ngModel)]="minAge"
-                (change)="applyFilters()"
-                placeholder="Mín"
-              />
-              <span>-</span>
-              <input
-                type="number"
-                min="0"
-                [(ngModel)]="maxAge"
-                (change)="applyFilters()"
-                placeholder="Máx"
-              />
-            </div>
-          </div>
-
-          <div class="filter-group">
-            <label>Fecha publicación:</label>
-            <div class="filter-date-range">
-              <mat-form-field appearance="fill" class="date-filter-field">
-                <mat-label>Desde</mat-label>
-                <input
-                  matInput
-                  [matDatepicker]="pickerMin"
-                  [(ngModel)]="minDate"
-                  (dateChange)="applyFilters()"
-                />
-                <mat-datepicker-toggle
-                  matSuffix
-                  [for]="pickerMin"
-                ></mat-datepicker-toggle>
-                <mat-datepicker #pickerMin></mat-datepicker>
-              </mat-form-field>
-              <span>-</span>
-              <mat-form-field appearance="fill" class="date-filter-field">
-                <mat-label>Hasta</mat-label>
-                <input
-                  matInput
-                  [matDatepicker]="pickerMax"
-                  [(ngModel)]="maxDate"
-                  (dateChange)="applyFilters()"
-                />
-                <mat-datepicker-toggle
-                  matSuffix
-                  [for]="pickerMax"
-                ></mat-datepicker-toggle>
-                <mat-datepicker #pickerMax></mat-datepicker>
-              </mat-form-field>
-            </div>
-          </div>
-
-          <div class="price-filter">
-            <label
-              >Precio:
-              <span
-                class="price-range-values"
-                [class.active-filter]="isMinPriceActive || isMaxPriceActive"
-              >
-                {{ minPrice }}€ - {{ maxPrice }}€
-              </span>
-            </label>
-            <div class="price-slider-container" id="priceSliderContainer">
-              <input
-                type="range"
-                class="price-slider min-slider"
-                [(ngModel)]="minPrice"
-                [min]="0"
-                [max]="maxSliderValue"
-                (input)="onMinSliderChange()"
-                (change)="applyFilters()"
-                aria-label="Precio mínimo"
-                title="Ajusta el precio mínimo"
-              />
-              <input
-                type="range"
-                class="price-slider max-slider"
-                [(ngModel)]="maxPrice"
-                [min]="0"
-                [max]="maxSliderValue"
-                (input)="onMaxSliderChange()"
-                (change)="applyFilters()"
-                aria-label="Precio máximo"
-                title="Ajusta el precio máximo"
-              />
-              <div class="price-slider-track"></div>
-              <div class="price-slider-fill" id="priceSliderFill"></div>
-            </div>
-            <div class="price-values-display">
-              <span class="min-value">0€</span>
-              <span class="max-value">{{ maxSliderValue }}€</span>
-            </div>
-            <div class="filter-buttons">
-              <button
-                type="button"
-                class="apply-filters"
-                (click)="applyFilters()"
-              >
-                <i class="fas fa-filter"></i> Aplicar filtros
-              </button>
-              <button
-                type="button"
-                class="reset-filters"
-                (click)="resetFilters()"
-              >
-                <i class="fas fa-undo"></i> Resetear filtros
-              </button>
-            </div>
-          </div>
+      <div class="features">
+        <div class="feature-card">
+          <i class="fas fa-cow"></i>
+          <h3>Compra y Vende</h3>
+          <p>Encuentra el ganado que necesitas o publica tus animales</p>
         </div>
-      </aside>
-      <section class="advertisments-section">
-        <h2>Anuncios disponibles</h2>
 
-        @if (loading) {
-        <div class="loading-spinner">
-          <i class="fas fa-spinner fa-spin"></i>
-          <p>Cargando anuncios...</p>
+        <div class="feature-card">
+          <i class="fas fa-shield-alt"></i>
+          <h3>Seguro y Confiable</h3>
+          <p>Transacciones seguras con garantías de calidad</p>
         </div>
-        } @else if (error) {
-        <div class="error-message">
-          <i class="fas fa-exclamation-triangle"></i>
-          <p>{{ error }}</p>
+
+        <div class="feature-card">
+          <i class="fas fa-map-marked-alt"></i>
+          <h3>En toda España</h3>
+          <p>Conectamos ganaderos de todas las regiones</p>
         </div>
-        } @else if (filteredAds.length === 0) {
-        <div class="no-results">
-          <i class="fas fa-search"></i>
-          <h3>No se encontraron anuncios</h3>
-          <p>Intenta con otros criterios de búsqueda</p>
-          <button type="button" class="reset-filters" (click)="resetFilters()">
-            Ver todos los anuncios
-          </button>
-        </div>
-        } @else {
-          <div class="ads-grid">
-            @for (ad of filteredAds; track ad.id) {
-
-            <div class="ad-card">
-              <div class="ad-image">
-
-                @if (ad.imageUrl) {
-                <img
-                  [src]="ad.imageUrl"
-                  [alt]="'Imagen de ' + ad.title"
-                  class="ad-thumbnail"
-                  [attr.title]="ad.title"
-                />
-                } @else {
-                <div class="no-image">
-                  <i class="fas fa-image"></i>
-                </div>
-                }
-                <span class="category-badge">{{ ad.specie.name }}</span>
-              </div>
-
-              <div class="ad-details">
-                <h3 class="ad-title">
-                  <a [routerLink]="['/advertisment', ad.id]">{{ ad.title }}</a>
-                </h3>
-                <p class="ad-price">
-                  {{ ad.price | currency : "EUR" : "symbol" : "1.0-0" }}
-                </p>
-                <p class="ad-location">
-                  <i class="fas fa-map-marker-alt"></i>
-                  {{
-                    ad.location && ad.location.name
-                      ? ad.location.name
-                      : "Localización no especificada"
-                  }}
-                </p>
-                <p class="ad-date">
-                  <i class="fas fa-calendar-alt"></i>
-                  {{ ad.create_at | date : "dd/MM/yyyy" }}
-                </p>
-                <span
-                  *ngIf="ad.age !== undefined && ad.age !== null"
-                  class="ad-age"
-                >
-                  <span class="ad-age-label">Edad:</span>
-                  <ng-container><span>{{calculateAge(ad.birthdate)}}</span></ng-container>
-                </span>
-              </div>
-
-              <div class="ad-actions">
-                <button
-                  type="button"
-                  class="action-button favorite"
-                  [class.is-favorite]="ad.favorite"
-                  [title]="ad.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
-                  [attr.aria-label]="ad.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
-                  (click)="toggleFavorite(ad)"
-                >
-                  <i [class]="ad.favorite ? 'fas fa-heart' : 'far fa-heart'"></i>
-                  <span class="sr-only">{{
-                    ad.favorite ? "Quitar de favoritos" : "Añadir a favoritos"
-                  }}</span>
-                </button>
-                <a [routerLink]="['/advertisment', ad.id]" class="view-button">
-                  Ver anuncio <i class="fas fa-arrow-right"></i>
-                </a>
-              </div>
-
-            </div> }
-          </div>
-        }
-      </section>
+      </div>
     </div>
   </div>
-</div>
+  }
+
+  <!-- Contenido para usuarios autenticados -->
+  @if (isLoggedIn) {
+  <div class="main-content-layout">
+
+    <div class="home-container">
+      <div class="main-content-layout">
+        <div class="home-flex-layout">
+          <aside class="filters-section">
+            <div class="filters-container">
+              <h2>Filtrar anuncios</h2>
+
+              <div class="filter-group">
+                <label for="searchTerm">Buscar:</label>
+                <div class="search-input-wrapper">
+                  <input type="text" id="searchTerm" [(ngModel)]="searchTerm"
+                    placeholder="Buscar por título, descripción..." (keyup.enter)="applyFilters()" />
+                  <button type="button" class="search-button" (click)="applyFilters()" title="Buscar"
+                    aria-label="Buscar">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <label for="especie">Especie:</label>
+                <select id="especie" [(ngModel)]="especieSeleccionada" (change)="onEspecieChange()">
+                  <option value="">Todas las especies</option>
+                  @for (especie of especies; track especie.id) {
+                  <option [value]="especie.id">{{ especie.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="raza">Raza:</label>
+                <select id="raza" [(ngModel)]="razaSeleccionada" (change)="applyFilters()"
+                  [disabled]="!especieSeleccionada">
+                  <option value="">Todas las razas</option>
+                  @for (raza of filteredRazasBySearch; track raza.id) {
+                  <option [value]="raza.id">{{ raza.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="location">Localización:</label>
+                <select id="location" [(ngModel)]="selectedLocation" (change)="applyFilters()">
+                  <option value="">Todas las provincias</option>
+                  @for (loc of locations; track loc.id) {
+                  <option [value]="loc.name">{{ loc.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="language">Idioma:</label>
+                <select id="language" [(ngModel)]="selectedLanguage" (change)="applyFilters()">
+                  <option value="">Todos los idiomas</option>
+                  @for (lang of languages; track lang.id) {
+                  <option [value]="lang.id">{{ lang.language }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="gender">Género:</label>
+                <select id="gender" [(ngModel)]="selectedGender" (change)="applyFilters()">
+                  <option value="">Ambos</option>
+                  <option value="Macho">Macho</option>
+                  <option value="Hembra">Hembra</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label>Edad (meses):</label>
+                <div class="filter-age-range">
+                  <input type="number" min="0" [(ngModel)]="minAge" (change)="applyFilters()" placeholder="Mín" />
+                  <span>-</span>
+                  <input type="number" min="0" [(ngModel)]="maxAge" (change)="applyFilters()" placeholder="Máx" />
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <label>Fecha publicación:</label>
+                <div class="filter-date-range">
+                  <mat-form-field appearance="fill" class="date-filter-field">
+                    <mat-label>Desde</mat-label>
+                    <input matInput [matDatepicker]="pickerMin" [(ngModel)]="minDate" (dateChange)="applyFilters()" />
+                    <mat-datepicker-toggle matSuffix [for]="pickerMin"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerMin></mat-datepicker>
+                  </mat-form-field>
+                  <span>-</span>
+                  <mat-form-field appearance="fill" class="date-filter-field">
+                    <mat-label>Hasta</mat-label>
+                    <input matInput [matDatepicker]="pickerMax" [(ngModel)]="maxDate" (dateChange)="applyFilters()" />
+                    <mat-datepicker-toggle matSuffix [for]="pickerMax"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerMax></mat-datepicker>
+                  </mat-form-field>
+                </div>
+              </div>
+
+              <div class="price-filter">
+                <label>Precio:
+                  <span class="price-range-values" [class.active-filter]="isMinPriceActive || isMaxPriceActive">
+                    {{ minPrice }}€ - {{ maxPrice }}€
+                  </span>
+                </label>
+                <div class="price-slider-container" id="priceSliderContainer">
+                  <input type="range" class="price-slider min-slider" [(ngModel)]="minPrice" [min]="0"
+                    [max]="maxSliderValue" (input)="onMinSliderChange()" (change)="applyFilters()"
+                    aria-label="Precio mínimo" title="Ajusta el precio mínimo" />
+                  <input type="range" class="price-slider max-slider" [(ngModel)]="maxPrice" [min]="0"
+                    [max]="maxSliderValue" (input)="onMaxSliderChange()" (change)="applyFilters()"
+                    aria-label="Precio máximo" title="Ajusta el precio máximo" />
+                  <div class="price-slider-track"></div>
+                  <div class="price-slider-fill" id="priceSliderFill"></div>
+                </div>
+                <div class="price-values-display">
+                  <span class="min-value">0€</span>
+                  <span class="max-value">{{ maxSliderValue }}€</span>
+                </div>
+                <div class="filter-buttons">
+                  <button type="button" class="apply-filters" (click)="applyFilters()">
+                    <i class="fas fa-filter"></i> Aplicar filtros
+                  </button>
+                  <button type="button" class="reset-filters" (click)="resetFilters()">
+                    <i class="fas fa-undo"></i> Resetear filtros
+                  </button>
+                </div>
+              </div>
+            </div>
+          </aside>
+          <section class="advertisments-section">
+            <h2>Anuncios disponibles</h2>
+
+            @if (loading) {
+            <div class="loading-spinner">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Cargando anuncios...</p>
+            </div>
+            } @else if (error) {
+            <div class="error-message">
+              <i class="fas fa-exclamation-triangle"></i>
+              <p>{{ error }}</p>
+            </div>
+            } @else if (filteredAds.length === 0) {
+            <div class="no-results">
+              <i class="fas fa-search"></i>
+              <h3>No se encontraron anuncios</h3>
+              <p>Intenta con otros criterios de búsqueda</p>
+              <button type="button" class="reset-filters" (click)="resetFilters()">
+                Ver todos los anuncios
+              </button>
+            </div>
+            } @else {
+            <div class="ads-grid">
+              @for (ad of filteredAds; track ad.id) {
+
+              <div class="ad-card">
+                <div class="ad-image">
+
+                  @if (ad.imageUrl) {
+                  <img [src]="ad.imageUrl" [alt]="'Imagen de ' + ad.title" class="ad-thumbnail"
+                    [attr.title]="ad.title" />
+                  } @else {
+                  <div class="no-image">
+                    <i class="fas fa-image"></i>
+                  </div>
+                  }
+                  <span class="category-badge">{{typeof ad.specie != 'number' ?ad.specie.name:'' }}</span>
+                </div>
+
+                <div class="ad-details">
+                  <h3 class="ad-title">
+                    <a [routerLink]="['/advertisment', ad.id]">{{ ad.title }}</a>
+                  </h3>
+                  <p class="ad-price">
+                    {{ ad.price | currency : "EUR" : "symbol" : "1.0-0" }}
+                  </p>
+                  <p class="ad-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    {{typeof ad.location != 'number' &&
+                    ad.location && ad.location.name
+                    ? ad.location.name
+                    : "Localización no especificada"
+                    }}
+                  </p>
+                  <p class="ad-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    {{ ad.create_at | date : "dd/MM/yyyy" }}
+                  </p>
+                  <span *ngIf="ad.age !== undefined && ad.age !== null" class="ad-age">
+                    <span class="ad-age-label">Edad:</span>
+                    <ng-container><span>{{calculateAge(ad.birthdate)}}</span></ng-container>
+                  </span>
+                </div>
+
+                <div class="ad-actions">
+                  <button type="button" class="action-button favorite" [class.is-favorite]="ad.favorite"
+                    [title]="ad.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
+                    [attr.aria-label]="ad.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
+                    (click)="toggleFavorite(ad)">
+                    <i [class]="ad.favorite ? 'fas fa-heart' : 'far fa-heart'"></i>
+                    <span class="sr-only">{{
+                      ad.favorite ? "Quitar de favoritos" : "Añadir a favoritos"
+                      }}</span>
+                  </button>
+                  <a [routerLink]="['/advertisment', ad.id]" class="view-button">
+                    Ver anuncio <i class="fas fa-arrow-right"></i>
+                  </a>
+                </div>
+
+              </div> }
+            </div>
+            }
+          </section>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  }

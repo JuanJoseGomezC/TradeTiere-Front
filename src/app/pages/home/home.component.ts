@@ -17,8 +17,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule } from '@angular/material/core';
 import Swal from 'sweetalert2';
 import { UserService } from '../../services/user.service';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -40,7 +41,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   filteredAds: Advertisment[] = [];
   loading = true;
   error: string | null = null;
-
+  isLoggedIn: boolean = false;
+  private authSubscription!: Subscription;
   // Filter variables
   especieSeleccionada: string = '';
   razaSeleccionada: string = '';
@@ -83,10 +85,26 @@ export class HomeComponent implements OnInit, AfterViewInit {
     private languageService: LanguageService,
     private specieService: SpecieService,
     private raceService: RaceService,
-    private userService: UserService // Añadido
+    private userService: UserService, // Añadido
+    private authService: AuthService // Añadir AuthService
   ) {}
 
   ngOnInit(): void {
+    // Verificar estado de autenticación
+    this.authSubscription = this.authService.isAuthenticated$.subscribe(
+      (isAuthenticated) => {
+        this.isLoggedIn = isAuthenticated;
+        // Solo cargar anuncios si está autenticado
+        if (isAuthenticated) {
+          this.cargadatos();
+        } else {
+          this.loading = false;
+        }
+      }
+    );
+  }
+
+  cargadatos(): void{
     // Cargar especies desde la base de datos
     this.specieService.getAll().subscribe((species) => {
       this.especies = species;
@@ -135,6 +153,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
       this.loadAdvertisments();
     });
+  }
+  ngOnDestroy(): void {
+    // Limpiar subscripción
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
   }
 
   ngAfterViewInit(): void {

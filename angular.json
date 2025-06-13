@@ -24,7 +24,9 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/assets",
+              "src/assets/favicon/favicon.jpeg"
             ],
             "styles": [
               "@angular/material/prebuilt-themes/cyan-orange.css",

@@ -1,0 +1,83 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background: #fff;
+  border-radius: 10px;
+  padding: 2rem;
+  min-width: 350px;
+  max-width: 95vw;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.form-actions button {
+  min-width: 150px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.form-actions mat-icon {
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.image-preview {
+  margin-top: 1rem;
+}
+
+.image-preview img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.image-upload-group {
+  margin-top: 1rem;
+}
+
+.image-upload-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.image-upload-group img {
+  max-width: 100px;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
