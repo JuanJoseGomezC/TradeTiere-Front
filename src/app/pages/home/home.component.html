@@ -1,31 +1,37 @@
 <div class="home-container">
   <!-- Contenido para usuarios NO autenticados -->
   @if (!isLoggedIn) {
-  <div class="welcome-page">
-    <div class="welcome-content">
-      <h1>Bienvenido a TradeTiere</h1>
-      <p>La plataforma líder para la compra y venta de ganado</p>
-
-      <div class="features">
-        <div class="feature-card">
-          <i class="fas fa-cow"></i>
-          <h3>Compra y Vende</h3>
-          <p>Encuentra el ganado que necesitas o publica tus animales</p>
+  <div class="welcome-hero">
+    <div class="hero-bg">
+      <div class="hero-content">
+        <div class="hero-logo">
+          <img src="assets/logos/tradetiere-logo-blanco.png" alt="Logo TradeTiere" class="logo-img" />
         </div>
-
-        <div class="feature-card">
-          <i class="fas fa-shield-alt"></i>
-          <h3>Seguro y Confiable</h3>
-          <p>Transacciones seguras con garantías de calidad</p>
-        </div>
-
-        <div class="feature-card">
-          <i class="fas fa-map-marked-alt"></i>
-          <h3>En toda España</h3>
-          <p>Conectamos ganaderos de todas las regiones</p>
-        </div>
+        <h1>Bienvenido a <span class="brand">TradeTiere</span></h1>
+        <p class="hero-subtitle">La plataforma líder para la compra y venta de ganado en España</p>
+        <!-- Botones de acción eliminados -->
       </div>
     </div>
+    <div class="features-row">
+      <div class="feature-card">
+        <i class="fas fa-cow"></i>
+        <h3>Compra y Vende</h3>
+        <p>Encuentra el ganado que necesitas o publica tus animales fácilmente.</p>
+      </div>
+      <div class="feature-card">
+        <i class="fas fa-shield-alt"></i>
+        <h3>Seguro y Confiable</h3>
+        <p>Transacciones protegidas y usuarios verificados para tu tranquilidad.</p>
+      </div>
+      <div class="feature-card">
+        <i class="fas fa-map-marked-alt"></i>
+        <h3>En toda España</h3>
+        <p>Conectamos ganaderos y compradores de todas las regiones.</p>
+      </div>
+    </div>
+    <footer class="home-footer">
+      <span>© 2025 TradeTiere · Tu mercado ganadero digital</span>
+    </footer>
   </div>
   }
 

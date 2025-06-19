@@ -17,6 +17,12 @@
   padding: 2rem;
   min-width: 350px;
   max-width: 95vw;
+  color: #222; /* Letra más oscura en todo el modal */
+}
+
+.modal-container,
+.modal-container * {
+  color: #181818 !important;
 }
 
 .modal-header {
@@ -31,6 +37,22 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+}
+
+/* Oscurecer texto de campos y labels de Angular Material */
+.modal-container .mat-form-field-label,
+.modal-container .mat-input-element,
+.modal-container .mat-form-field-infix,
+.modal-container label,
+.modal-container input,
+.modal-container textarea,
+.modal-container select {
+  color: #181818 !important;
+}
+
+/* Oscurecer texto de botones dentro del modal */
+.form-actions button {
+  color: #181818 !important;
 }
 
 .form-actions {

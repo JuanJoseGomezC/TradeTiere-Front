@@ -428,4 +428,28 @@ export class ProfileComponent implements OnInit {
     }
     return null;
   }
+
+  async confirmDeleteAd(adId: number) {
+    const result = await Swal.fire({
+      title: '¿Eliminar anuncio?',
+      text: 'Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar este anuncio?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+    });
+    if (result.isConfirmed) {
+      this.advertismentService.deleteAdvertisment(adId).subscribe(
+        () => {
+          this.userAds = this.userAds.filter(ad => ad.id !== adId);
+          Swal.fire('Eliminado', 'El anuncio ha sido eliminado correctamente.', 'success');
+        },
+        (error) => {
+          Swal.fire('Error', 'Error al eliminar el anuncio', 'error');
+        }
+      );
+    }
+  }
 }

@@ -159,11 +159,7 @@
                     <button type="button" class="action-button edit" title="Editar anuncio" aria-label="Editar anuncio" (click)="openEditAdModal(ad)">
                       <i class="fas fa-pencil-alt"></i>
                     </button>
-                    @if (ad.status !== 'sold') {
-                      <button type="button" class="action-button sold" (click)="markAsSold(ad.id)" title="Marcar como vendido" aria-label="Marcar como vendido">
-                        <i class="fas fa-check"></i>
-                      </button>
-                    }                    <button type="button" class="action-button delete" (click)="deleteAd(ad.id)" title="Eliminar anuncio" aria-label="Eliminar anuncio">
+                    <button type="button" class="action-button delete" (click)="confirmDeleteAd(ad.id)" title="Eliminar anuncio" aria-label="Eliminar anuncio">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>

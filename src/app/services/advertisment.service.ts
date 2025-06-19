@@ -173,7 +173,11 @@ export class AdvertismentService {
     id: number,
     adData: Partial<Advertisment>
   ): Observable<Advertisment> {
-    const updateDto: UpdateAdvertismentDto = this.mapToApiFormat(adData);
+    const updateDto: UpdateAdvertismentDto & { image?: ImageDto | null } = this.mapToApiFormat(adData);
+    // Embebe la imagen si existe
+    if (adData.image) {
+      (updateDto as any).image = adData.image;
+    }
     return this.apiService
       .put<AdvertismentDto>(`/advertisment/${id}`, updateDto)
       .pipe(map((ad) => this.enhanceAdvertisment(ad)));
@@ -229,6 +233,7 @@ export class AdvertismentService {
       language: adData.language,
       gender: adData.gender,
       price: adData.price,
+      // No incluir image aquí, se añade explícitamente en updateAdvertisment si existe
     };
   }
 
